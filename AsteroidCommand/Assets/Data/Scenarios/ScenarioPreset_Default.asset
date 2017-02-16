@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b9aebff5072a2d4488c7177e65d6ed78, type: 3}
+  m_Name: ScenarioPreset_Default
+  m_EditorClassIdentifier: 
+  m_waveSettings:
+  - m_waveTime: 2
+    m_enemies:
+    - m_spawnInterval: 0.5
+      m_enemyPrefab: {fileID: 1980887535671264, guid: 4ee1243316335bd46ac5eb4350970bbf,
+        type: 2}
+      m_enemyCount: 3
+  - m_waveTime: 8
+    m_enemies:
+    - m_spawnInterval: 0.3
+      m_enemyPrefab: {fileID: 1980887535671264, guid: 4ee1243316335bd46ac5eb4350970bbf,
+        type: 2}
+      m_enemyCount: 6
+  - m_waveTime: 16
+    m_enemies:
+    - m_spawnInterval: 0.2
+      m_enemyPrefab: {fileID: 1980887535671264, guid: 4ee1243316335bd46ac5eb4350970bbf,
+        type: 2}
+      m_enemyCount: 8
