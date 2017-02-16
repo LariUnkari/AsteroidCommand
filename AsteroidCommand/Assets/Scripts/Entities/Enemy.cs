@@ -1,25 +1,19 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Enemy : MonoBehaviour
+public class Enemy : Projectile
 {
     public int m_health = 1;
-    public float m_speed = 5f;
-
-    private void Update()
-    {
-        transform.position = transform.position + transform.forward * 0.2f * m_speed * Time.deltaTime;
-    }
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.tag == "Ground")
         {
             Debug.Log(DebugUtilities.AddTimestampPrefix("Enemy '" + name + "' hit Ground!"), this);
-            
+
             // TODO: Make the player lose the game
 
-            Destroy(gameObject);
+            OnDetonate();
         }
         else if (other.tag == "Player")
         {
@@ -27,7 +21,7 @@ public class Enemy : MonoBehaviour
 
             // TODO: Disable the player turret
 
-            Destroy(gameObject);
+            OnDetonate();
         }
         else if (other.tag == "Fire")
         {

@@ -100,9 +100,9 @@ public class ScenarioManager : MonoBehaviour
 
         DebugUtilities.DrawArrow(source, target, Vector3.back, Color.red, 0, 0.5f);
 
-        GameObject go = Instantiate<GameObject>(enemy.m_enemyPrefab);
+        Quaternion rotation = Quaternion.LookRotation(target - source, Vector3.back);
+
+        GameObject go = Instantiate<GameObject>(enemy.m_enemyPrefab, source, rotation, GameManager.EntityRoot);
         go.name = enemy.m_enemyPrefab.name + "_" + waveIndex + "-" + enemyIndex;
-        go.transform.position = source;
-        go.transform.LookAt(target);
     }
 }

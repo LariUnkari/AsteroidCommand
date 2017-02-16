@@ -5,6 +5,10 @@ public class GameManager : MonoBehaviour
     public static GameManager s_instance;
 
     public ScenarioPreset m_scenario;
+    
+    public Transform m_entityRoot;
+
+    public static Transform EntityRoot { get { return s_instance != null ? s_instance.m_entityRoot : null; } }
 
     private void Awake()
     {
