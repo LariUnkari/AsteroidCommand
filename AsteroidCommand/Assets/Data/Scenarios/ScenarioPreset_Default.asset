@@ -12,21 +12,33 @@ MonoBehaviour:
   m_Name: ScenarioPreset_Default
   m_EditorClassIdentifier: 
   m_waveSettings:
-  - m_waveTime: 2
+  - m_waveTime: 0
     m_enemies:
     - m_spawnInterval: 0.5
       m_enemyPrefab: {fileID: 1980887535671264, guid: 4ee1243316335bd46ac5eb4350970bbf,
         type: 2}
+      m_modelPrefab: {fileID: 1332562090105332, guid: 56008b76aaba13247a6d466891c5d931,
+        type: 2}
+      m_minSpeedModifier: 1
+      m_maxSpeedModifier: 1.1
       m_enemyCount: 3
   - m_waveTime: 8
     m_enemies:
     - m_spawnInterval: 0.3
       m_enemyPrefab: {fileID: 1980887535671264, guid: 4ee1243316335bd46ac5eb4350970bbf,
         type: 2}
+      m_modelPrefab: {fileID: 1332562090105332, guid: 56008b76aaba13247a6d466891c5d931,
+        type: 2}
+      m_minSpeedModifier: 1.05
+      m_maxSpeedModifier: 1.2
       m_enemyCount: 6
   - m_waveTime: 16
     m_enemies:
     - m_spawnInterval: 0.2
       m_enemyPrefab: {fileID: 1980887535671264, guid: 4ee1243316335bd46ac5eb4350970bbf,
         type: 2}
+      m_modelPrefab: {fileID: 1332562090105332, guid: 56008b76aaba13247a6d466891c5d931,
+        type: 2}
+      m_minSpeedModifier: 1.1
+      m_maxSpeedModifier: 1.3
       m_enemyCount: 8

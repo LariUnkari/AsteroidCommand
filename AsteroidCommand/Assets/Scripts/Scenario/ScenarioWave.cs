@@ -23,13 +23,12 @@ public class ScenarioWave
 
     public int WaveEnemyIndex { get { return m_currentWaveEnemyIndex; } }
 
-    public ScenarioWave(ScenarioPreset.Wave preset, int index, OnSpawnEnemy onSpawnEnemyCallback)
+    public ScenarioWave(ScenarioPreset.Wave preset, int index)
     {
         m_index = index;
         m_preset = preset;
         m_isStarted = false;
         m_isFinished = false;
-        OnSpawnEnemyCallback = onSpawnEnemyCallback;
     }
 
     public void Begin(float scenarioTime)
@@ -76,8 +75,7 @@ public class ScenarioWave
 
     private void SpawnEnemy(ScenarioPreset.Enemy enemy)
     {
-        if (OnSpawnEnemyCallback != null)
-            OnSpawnEnemyCallback.Invoke(enemy, m_index, m_currentWaveEnemyIndex);
+        ScenarioManager.OnSpawnEnemy(enemy, m_index, m_currentWaveEnemyIndex);
 
         m_currentWaveEnemyIndex++;
     }

@@ -174,11 +174,11 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1757604277855256}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 4694139986249680}
+  m_Father: {fileID: 4732803181286198}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4257726955147190
@@ -263,7 +263,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4732803181286198}
-  - {fileID: 4084827533026084}
   m_Father: {fileID: 4487355327755932}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
@@ -278,6 +277,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4257726955147190}
+  - {fileID: 4084827533026084}
   m_Father: {fileID: 4694139986249680}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -413,6 +413,9 @@ MonoBehaviour:
     type: 2}
   m_projectilePrefab: {fileID: 1980887535671264, guid: 50b281fa3175d67439bfc2a012e96991,
     type: 2}
+  m_projectileModelPrefab: {fileID: 1426889442096822, guid: e5fae589d2de7d246b6e0928fc96eb2d,
+    type: 2}
+  m_turretTransform: {fileID: 4732803181286198}
   m_muzzleTransform: {fileID: 4084827533026084}
 --- !u!135 &135834830125226116
 SphereCollider:

@@ -22,7 +22,7 @@ GameObject:
   - component: {fileID: 135501785823762720}
   - component: {fileID: 114327028177413564}
   m_Layer: 0
-  m_Name: Explosion
+  m_Name: Explosion_Missile_Player
   m_TagString: Fire
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -54,9 +54,46 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_effectPrefab: {fileID: 1040887182068010, guid: 3fe9b9c6861727c438a176cde1050bac,
     type: 2}
-  m_radius: 1
-  m_duration: 2
+  m_duration: 3
+  m_maxRadius: 0.5
+  m_radiusModifierCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 2
+      time: 0
+      value: 0.100000024
+      inSlope: 11.509262
+      outSlope: 11.509262
+      tangentMode: 0
+    - serializedVersion: 2
+      time: 0.19999999
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    - serializedVersion: 2
+      time: 0.59999996
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    - serializedVersion: 2
+      time: 0.8154056
+      value: 0.8427712
+      inSlope: -1.4178128
+      outSlope: -1.4178128
+      tangentMode: 0
+    - serializedVersion: 2
+      time: 1
+      value: 0
+      inSlope: -9.019857
+      outSlope: -9.019857
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
   m_collider: {fileID: 135501785823762720}
+  m_drawRadius: 0
 --- !u!135 &135501785823762720
 SphereCollider:
   m_ObjectHideFlags: 1

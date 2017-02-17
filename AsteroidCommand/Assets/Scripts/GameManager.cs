@@ -7,14 +7,16 @@ public class GameManager : MonoBehaviour
     public ScenarioPreset m_scenario;
     
     public Transform m_entityRoot;
+    public Transform m_uiRoot;
 
     public static Transform EntityRoot { get { return s_instance != null ? s_instance.m_entityRoot : null; } }
+    public static Transform UIRoot { get { return s_instance != null ? s_instance.m_uiRoot : null; } }
 
     private void Awake()
     {
         if (s_instance != null)
         {
-            Debug.LogError(DebugUtilities.AddTimestampPrefix("Multiple instances of GameManager detected! Destroying additional instance '" + name + "' in favor of the existing one"), s_instance);
+            Debug.LogError(DebugUtilities.AddTimestampPrefix("Multiple instances of " + typeof(GameManager) + " detected! Destroying additional instance '" + name + "' in favor of the existing one"), s_instance);
             Destroy(gameObject);
             return;
         }
@@ -30,7 +32,7 @@ public class GameManager : MonoBehaviour
         {
             GameObject go = new GameObject("ScenarioManager");
             ScenarioManager sm = go.AddComponent<ScenarioManager>();
-            sm.Initialize(m_scenario);
+            sm.InitializeScenario(m_scenario);
         }
         else
             Debug.LogError(DebugUtilities.AddTimestampPrefix("No Scenario provided!"));
