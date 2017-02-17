@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee5b159290812194384f14f640ed5faf, type: 3}
+  m_Name: SFX_Explosion_MissileEnemy
+  m_EditorClassIdentifier: 
+  m_mixerGroup: {fileID: 243763997000266770, guid: b2e073299987aae478548bfcb921c770,
+    type: 2}
+  m_clips:
+  - {fileID: 8300000, guid: 841855b697b98f44b94a29e7a122dad6, type: 3}
+  - {fileID: 8300000, guid: 89854363138758a48b7f5ca9d4e33c2f, type: 3}
+  m_loop: 0
+  m_loopCount: 2
+  m_rangeMin: 3
+  m_rangeMax: 20
+  m_rollOff: 1
+  m_pitchMin: 0.9
+  m_pitchDefault: 1
+  m_pitchMax: 1.1
+  m_randomizePitch: 1
+  m_volumeMin: 0.9
+  m_volumeDefault: 1
+  m_volumeMax: 1.1
+  m_randomizeVolume: 0

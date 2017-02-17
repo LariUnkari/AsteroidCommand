@@ -7,6 +7,8 @@ public class PlayerController : MonoBehaviour
     public GameObject m_projectilePrefab;
     public GameObject m_projectileModelPrefab;
 
+    public SoundEffectPreset m_fireSFX;
+
     public Transform m_turretTransform;
     public Transform m_muzzleTransform;
 
@@ -49,6 +51,9 @@ public class PlayerController : MonoBehaviour
                     fp.Initialize(m_muzzleTransform.position, m_targetPosition, m_projectileModelPrefab);
                 else
                     Debug.LogError(DebugUtilities.AddTimestampPrefix("Couldn't find FuseProjectile component in player missile prefab instance!"), go);
+
+                if (m_fireSFX != null)
+                    m_fireSFX.PlayAt(m_muzzleTransform.position);
 
                 m_shotsFired++;
             }

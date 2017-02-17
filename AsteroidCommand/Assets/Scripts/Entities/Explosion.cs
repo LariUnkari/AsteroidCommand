@@ -3,6 +3,7 @@
 public class Explosion : MonoBehaviour
 {
     public GameObject m_effectPrefab;
+    public SoundEffectPreset m_sfxPreset;
 
     public float m_duration = 2f;
     public float m_maxRadius = 0.5f;
@@ -32,6 +33,9 @@ public class Explosion : MonoBehaviour
             GameObject go = Instantiate<GameObject>(m_effectPrefab, transform.position, transform.rotation, transform);
             m_effectTransform = go.transform;
         }
+
+        if (m_sfxPreset != null)
+            m_sfxPreset.PlayAt(transform.position);
 
         if (m_drawRadius)
             CreateRadiusRenderer();

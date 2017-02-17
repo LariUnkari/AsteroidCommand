@@ -208,6 +208,12 @@ Prefab:
       propertyPath: m_uiRoot
       value: 
       objectReference: {fileID: 290236336}
+    - target: {fileID: 114647770396236258, guid: 4000bed51064f83439e3e28024345a94,
+        type: 2}
+      propertyPath: m_audioMixer
+      value: 
+      objectReference: {fileID: 24100000, guid: b2e073299987aae478548bfcb921c770,
+        type: 2}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 4000bed51064f83439e3e28024345a94, type: 2}
   m_IsPrefabParent: 0
@@ -866,7 +872,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 1000
+  far clip plane: 10
   field of view: 31
   orthographic: 1
   orthographic size: 6
@@ -890,7 +896,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 456276892}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 5, z: -20}
+  m_LocalPosition: {x: 0, y: 5, z: -5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -1078,8 +1084,9 @@ GameObject:
   m_Component:
   - component: {fileID: 605792845}
   - component: {fileID: 605792846}
+  - component: {fileID: 605792847}
   m_Layer: 0
-  m_Name: Proximity_Trigger
+  m_Name: Proximity_Trigger_Near
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1110,6 +1117,22 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 28, y: 3, z: 4}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &605792847
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 605792844}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf020c8add480a446961b9bd67cfff61, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_triggerSFX: {fileID: 11400000, guid: d576980a071607042ac821d749787322, type: 2}
+  m_minimumTriggerInterval: 8
+  m_triggerMask:
+    serializedVersion: 2
+    m_Bits: 512
 --- !u!1001 &609736198
 Prefab:
   m_ObjectHideFlags: 0
@@ -1549,7 +1572,7 @@ Transform:
   - {fileID: 1754951329}
   - {fileID: 440647930}
   m_Father: {fileID: 1781693606}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1781693605
 GameObject:
@@ -1577,10 +1600,69 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 605792845}
+  - {fileID: 1843161849}
   - {fileID: 1765521164}
   m_Father: {fileID: 954282783}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1843161848
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 1843161849}
+  - component: {fileID: 1843161851}
+  - component: {fileID: 1843161850}
+  m_Layer: 0
+  m_Name: Proximity_Trigger_Far
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1843161849
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1843161848}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 4.5, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1781693606}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1843161850
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1843161848}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf020c8add480a446961b9bd67cfff61, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_triggerSFX: {fileID: 11400000, guid: 77905aa09f8fc6949bf10f40a3dbffce, type: 2}
+  m_minimumTriggerInterval: 0.5
+  m_triggerMask:
+    serializedVersion: 2
+    m_Bits: 512
+--- !u!65 &1843161851
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1843161848}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 28, y: 3, z: 4}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1001 &1943920637
 Prefab:
   m_ObjectHideFlags: 0

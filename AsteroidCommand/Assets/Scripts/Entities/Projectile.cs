@@ -4,18 +4,17 @@ using System;
 
 public class Projectile : Entity
 {
-    public float m_speed = 5f;
-
-    public Vector3 m_modelRotateVelocity = Vector3.forward * 360f / 5f;
-
-    public GameObject m_detonateEffectPrefab;
-
     public LineRenderer m_trailRenderer;
 
+    public float m_speed = 5f;
+    public Vector3 m_modelRotateVelocity = Vector3.forward * 360f / 5f;
+
+    public SoundEffectPreset m_hitSFX;
+    public GameObject m_detonateEffectPrefab;
+    
     protected Vector3 m_startPosition;
 
     private bool m_isInitialized;
-
     private Transform m_modelTransform;
 
     private void Start()
@@ -78,13 +77,18 @@ public class Projectile : Entity
 
             if (obj.tag == "Ground")
             {
+                if (m_hitSFX != null)
+                    m_hitSFX.PlayAt(transform.position);
+
                 // TODO: Make the player lose the game
 
                 Detonate();
             }
             else if (obj.tag == "Player")
             {
-                // TODO: Disable the player turret
+                if (m_hitSFX != null)
+                    m_hitSFX.PlayAt(transform.position);
+
                 PlayerController pc = other.GetComponentInParent<PlayerController>();
                 pc.Disable();
 
@@ -94,10 +98,6 @@ public class Projectile : Entity
             {
                 OnDeath(true);
             }
-        }
-        else
-        {
-
         }
     }
 }

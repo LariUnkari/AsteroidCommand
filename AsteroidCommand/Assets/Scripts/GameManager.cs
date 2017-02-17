@@ -1,14 +1,18 @@
 ﻿using UnityEngine;
+using UnityEngine.Audio;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager s_instance;
+
+    public AudioMixer m_audioMixer;
 
     public ScenarioPreset m_scenario;
     
     public Transform m_entityRoot;
     public Transform m_uiRoot;
 
+    public static AudioMixer AudioMixer { get { return s_instance != null ? s_instance.m_audioMixer : null; } }
     public static Transform EntityRoot { get { return s_instance != null ? s_instance.m_entityRoot : null; } }
     public static Transform UIRoot { get { return s_instance != null ? s_instance.m_uiRoot : null; } }
 

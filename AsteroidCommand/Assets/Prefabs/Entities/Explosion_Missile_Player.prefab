@@ -54,6 +54,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_effectPrefab: {fileID: 1040887182068010, guid: 3fe9b9c6861727c438a176cde1050bac,
     type: 2}
+  m_sfxPreset: {fileID: 11400000, guid: aec33b29f8f0bfe449657e30ee41dddc, type: 2}
   m_duration: 3
   m_maxRadius: 0.5
   m_radiusModifierCurve:
