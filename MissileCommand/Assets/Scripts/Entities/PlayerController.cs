@@ -15,14 +15,12 @@ public class PlayerController : MonoBehaviour
     private Vector3 m_targetPosition;
     private GameObject m_cursorTargetObject;
 
-    private int m_shotsFired;
-
     private void Awake()
     {
+        GameManager.SetActivePlayerController(this);
+
         if (m_cursorTargetPrefab != null)
             m_cursorTargetObject = Instantiate<GameObject>(m_cursorTargetPrefab, Vector3.zero, Quaternion.identity);
-
-        m_shotsFired = 0;
     }
 
     private void Update()
@@ -43,25 +41,29 @@ public class PlayerController : MonoBehaviour
                 Vector3 position = m_muzzleTransform.position;
                 Quaternion rotation = Quaternion.LookRotation(m_targetPosition - position, Vector3.back);
 
-                GameObject go = Instantiate<GameObject>(m_projectilePrefab, position, rotation, GameManager.EntityRoot);
-                go.name = m_projectilePrefab.name + "_" + m_shotsFired;
+                Entity pe = ScenarioManager.OnSpawnEntity(m_projectilePrefab, position, rotation);
+                if (pe != null)
+                {
+                    pe.name = m_projectilePrefab.name + "_" + ScenarioManager.ShotsFired;
 
-                FuseProjectile fp = go.GetComponent<FuseProjectile>();
-                if (fp != null)
-                    fp.Initialize(m_muzzleTransform.position, m_targetPosition, m_projectileModelPrefab);
-                else
-                    Debug.LogError(DebugUtilities.AddTimestampPrefix("Couldn't find FuseProjectile component in player missile prefab instance!"), go);
+                    FuseProjectile fp = pe as FuseProjectile;
+                    if (fp != null)
+                        fp.Initialize(fp.ID, m_muzzleTransform.position, m_targetPosition, m_projectileModelPrefab);
+                    else
+                        Debug.LogError(DebugUtilities.AddTimestampPrefix("Couldn't find FuseProjectile component in player missile prefab instance!"), pe);
+                }
 
                 if (m_fireSFX != null)
                     m_fireSFX.PlayAt(m_muzzleTransform.position);
-
-                m_shotsFired++;
+                
+                ScenarioManager.ModifyShotsFired(1);
             }
         }
     }
 
     public void Disable()
     {
+        // TODO: Check if already disabled
         // TODO: Give player feedback, sounds and such
         enabled = false;
     }

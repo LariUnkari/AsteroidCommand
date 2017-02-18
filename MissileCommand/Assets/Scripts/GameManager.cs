@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -12,9 +13,14 @@ public class GameManager : MonoBehaviour
     public Transform m_entityRoot;
     public Transform m_uiRoot;
 
+    private PlayerController m_activePlayerController;
+
     public static AudioMixer AudioMixer { get { return s_instance != null ? s_instance.m_audioMixer : null; } }
+
     public static Transform EntityRoot { get { return s_instance != null ? s_instance.m_entityRoot : null; } }
     public static Transform UIRoot { get { return s_instance != null ? s_instance.m_uiRoot : null; } }
+
+    public static PlayerController ActivePlayerController { get { return s_instance != null ? s_instance.m_activePlayerController : null; } }
 
     private void Awake()
     {
@@ -26,6 +32,11 @@ public class GameManager : MonoBehaviour
         }
 
         s_instance = this;
+
+        if (!UserInterface.IsLoaded)
+            SceneManager.LoadScene("UserInterface", LoadSceneMode.Additive);
+        else
+            Debug.LogWarning("UserInterface scene was already loaded!");
     }
 
     private void Start()
@@ -40,5 +51,13 @@ public class GameManager : MonoBehaviour
         }
         else
             Debug.LogError(DebugUtilities.AddTimestampPrefix("No Scenario provided!"));
+    }
+
+    public static void SetActivePlayerController(PlayerController playerController)
+    {
+        if (s_instance == null)
+            return;
+
+        s_instance.m_activePlayerController = playerController;
     }
 }

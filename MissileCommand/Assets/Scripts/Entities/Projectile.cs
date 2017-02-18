@@ -14,17 +14,20 @@ public class Projectile : Entity
     
     protected Vector3 m_startPosition;
 
-    private bool m_isInitialized;
     private Transform m_modelTransform;
+
+    private bool m_isInitialized;
 
     private void Start()
     {
         if (!m_isInitialized)
-            Initialize(transform.position, null);
+            Initialize(-1, transform.position, null);
     }
 
-    public virtual void Initialize(Vector3 startPosition, GameObject modelPrefab)
+    public virtual void Initialize(int id, Vector3 startPosition, GameObject modelPrefab)
     {
+        base.Initialize(id);
+
         m_startPosition = startPosition;
 
         if (modelPrefab != null)
@@ -80,7 +83,7 @@ public class Projectile : Entity
                 if (m_hitSFX != null)
                     m_hitSFX.PlayAt(transform.position);
 
-                // TODO: Make the player lose the game
+                ScenarioManager.OnRoundEnd();
 
                 Detonate();
             }
@@ -89,8 +92,7 @@ public class Projectile : Entity
                 if (m_hitSFX != null)
                     m_hitSFX.PlayAt(transform.position);
 
-                PlayerController pc = other.GetComponentInParent<PlayerController>();
-                pc.Disable();
+                ScenarioManager.OnPlayerHit();
 
                 Detonate();
             }

@@ -69,7 +69,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_team: 0
-  m_killScore: 1
+  m_killScore: 10
   m_trailRenderer: {fileID: 120882595468684972}
   m_speed: 5
   m_modelRotateVelocity: {x: 0, y: 0, z: 72}
