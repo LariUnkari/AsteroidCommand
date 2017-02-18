@@ -1,82 +1,50 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 
 [System.Serializable]
 public class ScenarioWave
 {
-    public delegate void OnSpawnEnemy(ScenarioPreset.Enemy enemy, int waveIndex, int enemyIndex);
-    public OnSpawnEnemy OnSpawnEnemyCallback;
+    public struct Enemy
+    {
+        public GameObject m_entityPrefab;
+        public GameObject m_modelPrefab;
+        public float m_speed;
+
+        public Enemy(GameObject entityPrefab, GameObject modelPrefab, float speed)
+        {
+            m_entityPrefab = entityPrefab;
+            m_modelPrefab = modelPrefab;
+            m_speed = speed;
+        }
+    }
 
     public int m_index;
-    public ScenarioPreset.Wave m_preset;
 
-    [SerializeField] private bool m_isStarted;
-    [SerializeField] private bool m_isFinished;
+    private float m_waveTime;
+    
+    private List<Enemy[]> m_enemies;
+    
+    public int Index { get { return m_index; } }
+    public float WaveTime { get { return m_waveTime; } }
 
-    [SerializeField] private float m_waveT;
-
-    [SerializeField] private int m_currentWaveEnemyIndex;
-    [SerializeField] private ScenarioPreset.Enemy m_nextEnemy;
-
-    public bool IsStarted { get { return m_isStarted; } }
-    public bool IsFinished { get { return m_isFinished; } }
-
-    public int WaveEnemyIndex { get { return m_currentWaveEnemyIndex; } }
-
-    public ScenarioWave(ScenarioPreset.Wave preset, int index)
+    public ScenarioWave(int index, float waveTime)
     {
         m_index = index;
-        m_preset = preset;
-        m_isStarted = false;
-        m_isFinished = false;
+        m_waveTime = waveTime;
+        m_enemies = new List<Enemy[]>();
     }
 
-    public void Begin(float scenarioTime)
+    public void AddEnemies(Enemy[] enemies)
     {
-        if (m_preset.m_enemies.Length == 0)
+        m_enemies.Add(enemies);
+    }
+    
+    public void SpawnEnemies()
+    {
+        for (int i = 0; i < m_enemies.Count; i++)
         {
-            Finish();
-            return;
+            for (int e = 0; e < m_enemies[i].Length; e++)
+                ScenarioManager.OnSpawnEnemy(m_enemies[i][e], m_index, e);
         }
-
-        m_isStarted = true;
-        m_currentWaveEnemyIndex = 0;
-        m_nextEnemy = m_preset.m_enemies[m_currentWaveEnemyIndex];
-        m_waveT = scenarioTime - m_preset.m_waveTime;
-
-        Debug.Log(DebugUtilities.AddTimestampPrefix("Begin Wave " + m_index + " at time " + scenarioTime));
-    }
-
-    public void Update(float deltaTime)
-    {
-        if (m_waveT >= m_nextEnemy.m_spawnInterval)
-        {
-            m_waveT -= m_nextEnemy.m_spawnInterval;
-        }
-        else
-            m_waveT += deltaTime;
-
-        if (m_waveT >= m_nextEnemy.m_spawnInterval)
-            SpawnEnemy(m_nextEnemy);
-
-        if (m_currentWaveEnemyIndex >= m_nextEnemy.m_enemyCount)
-            Finish();
-    }
-
-    public void Finish()
-    {
-        m_isFinished = true;
-    }
-
-    public bool ShouldBegin(float scenarioTime)
-    {
-        return !m_isStarted && scenarioTime >= m_preset.m_waveTime;
-    }
-
-    private void SpawnEnemy(ScenarioPreset.Enemy enemy)
-    {
-        ScenarioManager.OnSpawnEnemy(enemy, m_index, m_currentWaveEnemyIndex);
-
-        m_currentWaveEnemyIndex++;
     }
 }

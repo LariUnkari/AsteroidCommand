@@ -19,9 +19,13 @@ public class UserInterface : MonoBehaviour
     public Text m_roundEndMessage;
     public string m_endSuccess = "WELL DONE";
     public string m_endDefeat = "GAME OVER";
+
     public Text m_penaltyAmount;
     public string m_penaltyFormat = "-{0}";
     public SoundEffectPreset m_penaltyPointSFX;
+    public float m_penaltyPointInterval = 0.3f;
+    public float m_penaltySpeedUpTimeLimit = 3f;
+    public float m_penaltyPointIntervalMin = 0.1f;
 
     //public GameObject[] m_ammoIndicators = new GameObject[10];
 
@@ -75,6 +79,41 @@ public class UserInterface : MonoBehaviour
             s_instance.m_roundEndMessage.text = success ? s_instance.m_endSuccess : s_instance.m_endDefeat;
             s_instance.m_roundEndWidget.SetActive(true);
         }
+    }
+
+    public static Coroutine StartPenaltyRoutine(int playerShotsFired)
+    {
+        if (s_instance != null)
+            return s_instance.StartCoroutine(s_instance.PenaltyRoutine(playerShotsFired));
+
+        return null;
+    }
+
+    public System.Collections.IEnumerator PenaltyRoutine(int playerShotsFired)
+    {
+        float penaltyCycleInterval = m_penaltyPointInterval;
+        if (playerShotsFired * m_penaltyPointInterval > m_penaltySpeedUpTimeLimit)
+            penaltyCycleInterval = Mathf.Clamp(m_penaltySpeedUpTimeLimit / playerShotsFired, m_penaltyPointIntervalMin, m_penaltyPointInterval);
+        
+        //Debug.Log(DebugUtilities.AddTimestampPrefix("Shots penalty being applied! Cycle interval: " + penaltyCycleInterval));
+
+        int penaltyAmount = 0;
+        while (playerShotsFired > 0)
+        {
+            playerShotsFired--;
+            ScenarioManager.SetShotsFired(playerShotsFired);
+            ScenarioManager.ModifyScore(-5);
+
+            penaltyAmount += 5;
+            SetPenaltyAmount(-penaltyAmount);
+
+            if (m_penaltyPointSFX != null)
+                m_penaltyPointSFX.PlayAt(Camera.main.transform.position, GameManager.AudioRoot);
+
+            yield return new WaitForSecondsRealtime(penaltyCycleInterval);
+        }
+
+        yield return new WaitForSecondsRealtime(2f);
     }
 
     public static void HideRoundEndWidget()

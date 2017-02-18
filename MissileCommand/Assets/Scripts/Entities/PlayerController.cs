@@ -9,6 +9,8 @@ public class PlayerController : MonoBehaviour
 
     public SoundEffectPreset m_fireSFX;
 
+    public float m_projectileSpeed = 5f;
+
     public Transform m_turretTransform;
     public Transform m_muzzleTransform;
 
@@ -48,7 +50,7 @@ public class PlayerController : MonoBehaviour
 
                     FuseProjectile fp = pe as FuseProjectile;
                     if (fp != null)
-                        fp.Initialize(fp.ID, m_muzzleTransform.position, m_targetPosition, m_projectileModelPrefab);
+                        fp.Initialize(fp.ID, m_muzzleTransform.position, m_targetPosition, m_projectileSpeed, m_projectileModelPrefab);
                     else
                         Debug.LogError(DebugUtilities.AddTimestampPrefix("Couldn't find FuseProjectile component in player missile prefab instance!"), pe);
                 }
@@ -61,10 +63,10 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public void Disable()
+    public void SetActive(bool active)
     {
         // TODO: Check if already disabled
         // TODO: Give player feedback, sounds and such
-        enabled = false;
+        enabled = active;
     }
 }

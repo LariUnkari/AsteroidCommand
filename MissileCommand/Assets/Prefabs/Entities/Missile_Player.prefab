@@ -70,11 +70,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_team: 1
   m_killScore: 0
-  m_speed: 20
+  m_trailRenderer: {fileID: 120251745402798748}
   m_modelRotateVelocity: {x: 0, y: 0, z: 72}
+  m_hitSFX: {fileID: 0}
   m_detonateEffectPrefab: {fileID: 1369375611097916, guid: ab5a7d40920dc5b45b3a732cc69e691b,
     type: 2}
-  m_trailRenderer: {fileID: 120251745402798748}
   m_targetCursorPrefab: {fileID: 1979662965108768, guid: af11f692e03c8614b8fb228e49a24b88,
     type: 2}
 --- !u!120 &120251745402798748
@@ -113,7 +113,7 @@ LineRenderer:
   - {x: 0, y: 0, z: -1}
   m_Parameters:
     serializedVersion: 2
-    widthMultiplier: 0.05
+    widthMultiplier: 0.03
     widthCurve:
       serializedVersion: 2
       m_Curve:

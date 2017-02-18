@@ -11,9 +11,9 @@ public class FuseProjectile : Projectile
     private float m_travelDuration;
     private float m_travelT;
 
-    public void Initialize(int id, Vector3 startPosition, Vector3 targetPosition, GameObject modelPrefab)
+    public void Initialize(int id, Vector3 startPosition, Vector3 targetPosition, float speed, GameObject modelPrefab)
     {
-        base.Initialize(id, startPosition, modelPrefab);
+        base.Initialize(id, startPosition, speed, modelPrefab);
         
         m_targetPosition = targetPosition;
 

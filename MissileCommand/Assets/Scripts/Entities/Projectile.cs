@@ -6,13 +6,13 @@ public class Projectile : Entity
 {
     public LineRenderer m_trailRenderer;
 
-    public float m_speed = 5f;
     public Vector3 m_modelRotateVelocity = Vector3.forward * 360f / 5f;
 
     public SoundEffectPreset m_hitSFX;
     public GameObject m_detonateEffectPrefab;
     
     protected Vector3 m_startPosition;
+    protected float m_speed;
 
     private Transform m_modelTransform;
 
@@ -21,14 +21,15 @@ public class Projectile : Entity
     private void Start()
     {
         if (!m_isInitialized)
-            Initialize(-1, transform.position, null);
+            Initialize(-1, transform.position, 5f, null);
     }
 
-    public virtual void Initialize(int id, Vector3 startPosition, GameObject modelPrefab)
+    public virtual void Initialize(int id, Vector3 startPosition, float speed, GameObject modelPrefab)
     {
         base.Initialize(id);
 
         m_startPosition = startPosition;
+        m_speed = speed;
 
         if (modelPrefab != null)
         {
@@ -76,7 +77,7 @@ public class Projectile : Entity
 
         if (m_team == Team.Enemy)
         {
-            Debug.Log(DebugUtilities.AddTimestampPrefix(m_team + " Projectile '" + name + "' hit " + obj.tag + "!"), other);
+            //Debug.Log(DebugUtilities.AddTimestampPrefix(m_team + " Projectile '" + name + "' hit " + obj.tag + "!"), other);
 
             if (obj.tag == "Ground")
             {

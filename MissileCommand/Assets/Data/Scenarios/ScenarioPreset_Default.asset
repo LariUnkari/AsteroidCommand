@@ -11,34 +11,119 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9aebff5072a2d4488c7177e65d6ed78, type: 3}
   m_Name: ScenarioPreset_Default
   m_EditorClassIdentifier: 
-  m_waveSettings:
-  - m_waveTime: 0
-    m_enemies:
-    - m_spawnInterval: 0.5
-      m_enemyPrefab: {fileID: 1980887535671264, guid: 4ee1243316335bd46ac5eb4350970bbf,
-        type: 2}
-      m_modelPrefab: {fileID: 1332562090105332, guid: 56008b76aaba13247a6d466891c5d931,
-        type: 2}
-      m_minSpeedModifier: 1
-      m_maxSpeedModifier: 1.1
-      m_enemyCount: 3
-  - m_waveTime: 8
-    m_enemies:
-    - m_spawnInterval: 0.3
-      m_enemyPrefab: {fileID: 1980887535671264, guid: 4ee1243316335bd46ac5eb4350970bbf,
-        type: 2}
-      m_modelPrefab: {fileID: 1332562090105332, guid: 56008b76aaba13247a6d466891c5d931,
-        type: 2}
-      m_minSpeedModifier: 1.05
-      m_maxSpeedModifier: 1.2
-      m_enemyCount: 6
-  - m_waveTime: 16
-    m_enemies:
-    - m_spawnInterval: 0.2
-      m_enemyPrefab: {fileID: 1980887535671264, guid: 4ee1243316335bd46ac5eb4350970bbf,
-        type: 2}
-      m_modelPrefab: {fileID: 1332562090105332, guid: 56008b76aaba13247a6d466891c5d931,
-        type: 2}
-      m_minSpeedModifier: 1.1
-      m_maxSpeedModifier: 1.3
-      m_enemyCount: 8
+  m_enemyPresets:
+  - m_enemyPrefab: {fileID: 1980887535671264, guid: 4ee1243316335bd46ac5eb4350970bbf,
+      type: 2}
+    m_modelPrefab: {fileID: 1332562090105332, guid: 56008b76aaba13247a6d466891c5d931,
+      type: 2}
+    m_firstRoundToSpawn: 1
+    m_speedMin: 5
+    m_speedMax: 8
+    m_speedCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 2
+        time: 0
+        value: 0
+        inSlope: 0.18173876
+        outSlope: 0.18173876
+        tangentMode: 0
+      - serializedVersion: 2
+        time: 1
+        value: 1
+        inSlope: 2.9748878
+        outSlope: 2.9748878
+        tangentMode: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 0
+    m_speedMultiplierGain: 1.05
+    m_speedMultiplierMax: 0
+    m_spawnCountMin: 12
+    m_spawnCountMax: 48
+    m_spawnCountRoundMax: 20
+    m_spawnCountCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 2
+        time: 0
+        value: 0
+        inSlope: 0.048405003
+        outSlope: 0.048405003
+        tangentMode: 0
+      - serializedVersion: 2
+        time: 0.4460929
+        value: 0.60964584
+        inSlope: 1.360178
+        outSlope: 1.360178
+        tangentMode: 0
+      - serializedVersion: 2
+        time: 1
+        value: 1
+        inSlope: 0.18174054
+        outSlope: 0.18174054
+        tangentMode: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 0
+    m_waveCountMultiplier: 0.6
+    m_waveProbabilityCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 2
+        time: 0
+        value: 0.7
+        inSlope: 0.43980736
+        outSlope: 0.43980736
+        tangentMode: 0
+      - serializedVersion: 2
+        time: 1
+        value: 1
+        inSlope: 1.5031011
+        outSlope: 1.5031011
+        tangentMode: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 0
+  m_waveCountMin: 10
+  m_waveCountMax: 20
+  m_waveCountRoundMax: 20
+  m_waveCountCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 2
+      time: 0
+      value: 0
+      inSlope: 1
+      outSlope: 1
+      tangentMode: 34
+    - serializedVersion: 2
+      time: 1
+      value: 1
+      inSlope: 1
+      outSlope: 1
+      tangentMode: 34
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
+  m_waveIntervalMin: 1
+  m_waveIntervalMax: 1.5
+  m_waveIntervalRoundMax: 30
+  m_waveIntervalCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 2
+      time: 0
+      value: 1
+      inSlope: -0.17604926
+      outSlope: -0.17604926
+      tangentMode: 0
+    - serializedVersion: 2
+      time: 1
+      value: 0
+      inSlope: -0.13818839
+      outSlope: -0.13818839
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0

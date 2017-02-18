@@ -7,16 +7,8 @@ public class ScenarioManager : MonoBehaviour
 
     private ScenarioPreset m_preset;
 
-    private bool m_roundStarted;
-    private int m_roundIndex;
-    private float m_roundTime;
-
-    private int m_currentWaveIndex;
-    private int m_nextWaveIndex;
-    private int m_firstActiveWaveIndex;
-
-    private List<ScenarioWave> m_waves;
-    private ScenarioWave m_cachedWave;
+    private ScenarioRound m_currentRound;
+    private int m_nextRoundIndex;
 
     private Dictionary<int, Entity> m_entities;
     private int m_entitiesSpawned;
@@ -26,10 +18,11 @@ public class ScenarioManager : MonoBehaviour
 
     private Rect m_gameArea;
 
-    public static float RoundTime { get { return s_instance != null ? s_instance.m_roundTime : -1f; } }
-    public static int WaveIndex { get { return s_instance != null ? s_instance.m_currentWaveIndex : -1; } }
     public static int Score { get { return s_instance != null ? s_instance.m_playerScore : -1; } }
     public static int ShotsFired { get { return s_instance != null ? s_instance.m_playerShotsFired : -1; } }
+
+    public static float RoundTime { get { return s_instance != null && s_instance.m_currentRound != null ? s_instance.m_currentRound.Time : -1f; } }
+    public static int WaveIndex { get { return s_instance != null && s_instance.m_currentRound != null ? s_instance.m_currentRound.WaveIndex : -1; } }
 
     private void Awake()
     {
@@ -47,17 +40,9 @@ public class ScenarioManager : MonoBehaviour
     {
         m_preset = preset;
 
-        m_roundStarted = false;
-
-        m_waves = new List<ScenarioWave>();
+        m_currentRound = null;
+        
         m_entities = new Dictionary<int, Entity>();
-
-        ScenarioWave wave;
-        for (int i = 0; i < m_preset.m_waveSettings.Length; i++)
-        {
-            wave = new ScenarioWave(m_preset.m_waveSettings[i], i);
-            m_waves.Add(wave);
-        }
 
         SetupGameArea();
 
@@ -65,8 +50,8 @@ public class ScenarioManager : MonoBehaviour
         m_playerShotsFired = 0;
 
         UserInterface.SetScore(m_playerScore);
-        UserInterface.SetShotsFired(m_playerShotsFired);
 
+        Time.timeScale = 1f;
         StartRound(0);
     }
 
@@ -88,53 +73,28 @@ public class ScenarioManager : MonoBehaviour
 
     private void Update()
     {
-        if (m_roundStarted)
-            UpdateRound();
-    }
+        if (m_currentRound != null && m_currentRound.HasStarted)
+            m_currentRound.Update(Time.deltaTime);
 
-    private void UpdateRound()
-    {
-        m_roundTime += Time.deltaTime;
-
-        // Begin a new wave if it's time for it
-        if (m_nextWaveIndex < m_waves.Count)
+        if (Input.GetKeyDown(KeyCode.R))
         {
-            m_cachedWave = m_waves[m_nextWaveIndex];
-            if (m_cachedWave.ShouldBegin(m_roundTime))
-            {
-                m_cachedWave.Begin(m_roundTime);
+            if (Input.GetKey(KeyCode.LeftShift))
+                m_nextRoundIndex += 10;
+            else
+                m_nextRoundIndex++;
 
-                m_currentWaveIndex = m_nextWaveIndex;
-                m_nextWaveIndex++;
-            }
-        }
-
-        // Update all active waves
-        for (int i = m_firstActiveWaveIndex; i <= m_currentWaveIndex; i++)
-        {
-            m_cachedWave = m_waves[i];
-
-            if (m_cachedWave.IsFinished && m_firstActiveWaveIndex == i)
-            {
-                m_firstActiveWaveIndex++;
-                continue;
-            }
-
-            m_cachedWave.Update(Time.deltaTime);
+            Debug.Log(DebugUtilities.AddTimestampPrefix("Debug increase next round index to " + m_nextRoundIndex));
         }
     }
 
     public void StartRound(int index)
     {
-        m_roundIndex = index;
-
+        m_playerShotsFired = 0;
+        UserInterface.SetShotsFired(m_playerShotsFired);
         GameManager.SetVolume(0f);
 
-        m_roundTime = 0f;
-
-        m_currentWaveIndex = -1;
-        m_nextWaveIndex = 0;
-        m_firstActiveWaveIndex = 0;
+        m_currentRound = ScenarioGenerator.GenerateRound(index, m_preset);
+        m_nextRoundIndex = index + 1;
 
         StartCoroutine(RoundStartRoutine());
     }
@@ -143,7 +103,7 @@ public class ScenarioManager : MonoBehaviour
     {
         yield return new WaitForSecondsRealtime(1f);
 
-        UserInterface.ShowRoundStartWidget(m_roundIndex);
+        UserInterface.ShowRoundStartWidget(m_currentRound.Index);
 
         if (UserInterface.RoundStartSFX != null)
         {
@@ -164,56 +124,31 @@ public class ScenarioManager : MonoBehaviour
             yield return new WaitForSecondsRealtime(2f);
 
         UserInterface.HideRoundStartWidget();
-        m_roundStarted = true;
+        m_currentRound.Start();
     }
 
     public void EndRound(bool success)
     {
         Debug.Log(DebugUtilities.AddTimestampPrefix("Round is ending..."));
-
-        if (GameManager.ActivePlayerController != null)
-            GameManager.ActivePlayerController.Disable();
+        m_currentRound.End();
 
         StartCoroutine(RoundEndRoutine(success));
     }
 
     private System.Collections.IEnumerator RoundEndRoutine(bool success)
     {
+        // Pause time on defeat
+        if (!success)
+            Time.timeScale = 0f;
+
         UserInterface.ShowRoundEndWidget(success);
         UserInterface.SetPenaltyAmount(0);
 
         yield return new WaitForSecondsRealtime(1f);
 
-        Debug.Log(DebugUtilities.AddTimestampPrefix("Shots fired: " + m_playerShotsFired));
+        //Debug.Log(DebugUtilities.AddTimestampPrefix("Shots fired this round: " + m_playerShotsFired));
 
-        SoundEffectPreset penaltySFX = UserInterface.PenaltyPointSFX;
-
-        float optimalPenaltyCycleDuration = 3f;
-        float minimumPenaltyCycleInterval = 0.15f;
-        float maximumPenaltyCycleInterval = 0.4f;
-
-        float penaltyCycleInterval = maximumPenaltyCycleInterval;
-        if (m_playerShotsFired * maximumPenaltyCycleInterval > optimalPenaltyCycleDuration)
-            penaltyCycleInterval = Mathf.Clamp(optimalPenaltyCycleDuration / m_playerShotsFired, minimumPenaltyCycleInterval, maximumPenaltyCycleInterval);
-
-        Debug.Log(DebugUtilities.AddTimestampPrefix("Shots penalty being applied! Cycle interval: " + penaltyCycleInterval));
-        
-        int penaltyAmount = 0;
-        while (m_playerShotsFired > 0)
-        {
-            ModifyShotsFired(-1);
-            ModifyScore(-5);
-
-            penaltyAmount += 5;
-            UserInterface.SetPenaltyAmount(-penaltyAmount);
-
-            if (penaltySFX != null)
-                penaltySFX.PlayAt(Camera.main.transform.position, GameManager.AudioRoot);
-
-            yield return new WaitForSecondsRealtime(penaltyCycleInterval);
-        }
-
-        yield return new WaitForSecondsRealtime(2f);
+        yield return UserInterface.StartPenaltyRoutine(m_playerShotsFired);
 
         UserInterface.HideRoundEndWidget();
 
@@ -222,8 +157,12 @@ public class ScenarioManager : MonoBehaviour
             Destroy(e.gameObject);
 
         m_entities.Clear();
-
-        // TODO: Return to initial game state
+        
+        // TODO: Go to demo mode
+        if (success)
+            StartRound(m_nextRoundIndex);
+        else
+            InitializeScenario(m_preset);
     }
 
     public static void ModifyScore(int amount)
@@ -231,8 +170,17 @@ public class ScenarioManager : MonoBehaviour
         if (s_instance == null)
             return;
 
-        s_instance.m_playerScore += amount;
-        //Debug.Log(DebugUtilities.AddTimestampPrefix("Player score modified by " + amount + ". Current score: " + s_instance.m_playerScore));
+        //Debug.Log(DebugUtilities.AddTimestampPrefix("Player score modified by " + amount));
+        SetScore(s_instance.m_playerScore + amount);
+    }
+
+    public static void SetScore(int amount)
+    {
+        if (s_instance == null)
+            return;
+
+        s_instance.m_playerScore = amount;
+        //Debug.Log(DebugUtilities.AddTimestampPrefix("Player score set to " + s_instance.m_playerScore));
 
         UserInterface.SetScore(s_instance.m_playerScore);
     }
@@ -242,36 +190,44 @@ public class ScenarioManager : MonoBehaviour
         if (s_instance == null)
             return;
 
-        s_instance.m_playerShotsFired += amount;
-        //Debug.Log(DebugUtilities.AddTimestampPrefix("Player shots fired modified by " + amount + ". Current amount: " + s_instance.m_playerShotsFired));
+        //Debug.Log(DebugUtilities.AddTimestampPrefix("Player shots fired modified by " + amount));
+        SetShotsFired(s_instance.m_playerShotsFired + amount);
+    }
+
+    public static void SetShotsFired(int amount)
+    {
+        if (s_instance == null)
+            return;
+
+        s_instance.m_playerShotsFired = amount;
+        //Debug.Log(DebugUtilities.AddTimestampPrefix("Player shots fired set to " + s_instance.m_playerShotsFired));
 
         UserInterface.SetShotsFired(s_instance.m_playerShotsFired);
     }
 
-    public static void OnSpawnEnemy(ScenarioPreset.Enemy enemy, int waveIndex, int enemyIndex)
+    public static void OnSpawnEnemy(ScenarioWave.Enemy enemy, int waveIndex, int enemyIndex)
     {
         if (s_instance != null)
             s_instance.OnSpawnEnemyInternal(enemy, waveIndex, enemyIndex);
     }
 
-    public void OnSpawnEnemyInternal(ScenarioPreset.Enemy enemy, int waveIndex, int enemyIndex)
+    public void OnSpawnEnemyInternal(ScenarioWave.Enemy enemy, int waveIndex, int enemyIndex)
     {
-        //Debug.Log(DebugUtilities.AddTimestampPrefix("Wave " + waveIndex + " spawning enemy " + enemyIndex + " at time " + m_scenarioTime));
+        //Debug.Log(DebugUtilities.AddTimestampPrefix("Wave " + waveIndex + " spawning enemy " + enemyIndex + " at time " + RoundTime));
         
         Vector3 startPosition = Vector3.Lerp(new Vector3(m_gameArea.xMin, m_gameArea.yMax, 0f), new Vector3(m_gameArea.xMax, m_gameArea.yMax, 0f), Random.value);
         Vector3 targetPosition = Vector3.Lerp(new Vector3(m_gameArea.xMin, 0f, 0f), new Vector3(m_gameArea.xMax, 0f, 0f), Random.value);
         Quaternion rotation = Quaternion.LookRotation(targetPosition - startPosition, Vector3.back);
         
-        Entity entity = OnSpawnEntityInternal(enemy.m_enemyPrefab, startPosition, rotation);
+        Entity entity = OnSpawnEntityInternal(enemy.m_entityPrefab, startPosition, rotation);
         if (entity != null)
         {
-            entity.name = enemy.m_enemyPrefab.name + "_" + waveIndex + "-" + enemyIndex;
+            entity.name = enemy.m_entityPrefab.name + "_" + waveIndex + "-" + enemyIndex;
 
             if (entity is Projectile)
             {
                 Projectile p = entity as Projectile;
-                p.Initialize(p.ID, startPosition, enemy.m_modelPrefab);
-                p.ModifySpeed(Random.Range(enemy.m_minSpeedModifier, enemy.m_maxSpeedModifier));
+                p.Initialize(p.ID, startPosition, enemy.m_speed, enemy.m_modelPrefab);
             }
         }
 
@@ -315,7 +271,7 @@ public class ScenarioManager : MonoBehaviour
 
         m_entities.Remove(entity.ID);
 
-        if (m_entities.Count == 0 && m_currentWaveIndex == m_waves.Count - 1)
+        if (m_entities.Count == 0 && m_currentRound != null && m_currentRound.IsLastWave)
         {
             // All waves cleared, player won the round
             OnRoundEnd(true);
@@ -325,7 +281,7 @@ public class ScenarioManager : MonoBehaviour
     public static void OnPlayerHit()
     {
         if (GameManager.ActivePlayerController != null)
-            GameManager.ActivePlayerController.Disable();
+            GameManager.ActivePlayerController.SetActive(false);
     }
 
     public static void OnRoundEnd(bool success)
