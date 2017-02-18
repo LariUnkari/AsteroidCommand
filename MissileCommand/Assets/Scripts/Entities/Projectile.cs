@@ -65,7 +65,7 @@ public class Projectile : Entity
     public virtual void Detonate()
     {
         if (m_detonateEffectPrefab != null)
-            Instantiate<GameObject>(m_detonateEffectPrefab, transform.position, Quaternion.identity, GameManager.EntityRoot);
+            ScenarioManager.OnSpawnEntity(m_detonateEffectPrefab, transform.position, Quaternion.identity);
 
         OnDeath(false);
     }
@@ -81,20 +81,20 @@ public class Projectile : Entity
             if (obj.tag == "Ground")
             {
                 if (m_hitSFX != null)
-                    m_hitSFX.PlayAt(transform.position);
-
-                ScenarioManager.OnRoundEnd();
+                    m_hitSFX.PlayAt(transform.position, GameManager.AudioRoot);
 
                 Detonate();
+
+                ScenarioManager.OnRoundEnd(false);
             }
             else if (obj.tag == "Player")
             {
                 if (m_hitSFX != null)
-                    m_hitSFX.PlayAt(transform.position);
-
-                ScenarioManager.OnPlayerHit();
+                    m_hitSFX.PlayAt(transform.position, GameManager.AudioRoot);
 
                 Detonate();
+
+                ScenarioManager.OnPlayerHit();
             }
             else if (obj.tag == "Fire")
             {

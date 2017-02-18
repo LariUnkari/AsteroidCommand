@@ -6,16 +6,18 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager s_instance;
 
-    public AudioMixer m_audioMixer;
-
     public ScenarioPreset m_scenario;
-    
+
+    public AudioMixer m_audioMixer;
+    public Transform m_audioRoot;
+
     public Transform m_entityRoot;
     public Transform m_uiRoot;
 
     private PlayerController m_activePlayerController;
 
     public static AudioMixer AudioMixer { get { return s_instance != null ? s_instance.m_audioMixer : null; } }
+    public static Transform AudioRoot { get { return s_instance != null ? s_instance.m_audioRoot : null; } }
 
     public static Transform EntityRoot { get { return s_instance != null ? s_instance.m_entityRoot : null; } }
     public static Transform UIRoot { get { return s_instance != null ? s_instance.m_uiRoot : null; } }
@@ -43,6 +45,8 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log(DebugUtilities.AddTimestampPrefix("GameManager.Start()"), this);
 
+        SetVolume(-80f);
+
         if (m_scenario != null)
         {
             GameObject go = new GameObject("ScenarioManager");
@@ -59,5 +63,14 @@ public class GameManager : MonoBehaviour
             return;
 
         s_instance.m_activePlayerController = playerController;
+    }
+
+    public static void SetVolume(float volume)
+    {
+        if (s_instance == null)
+            return;
+
+        if (s_instance.m_audioMixer != null)
+            s_instance.m_audioMixer.SetFloat("VolumeMaster", volume);
     }
 }

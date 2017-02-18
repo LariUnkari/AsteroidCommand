@@ -33,7 +33,7 @@ public class FuseProjectile : Projectile
         
         if (m_travelT >= 1f)
         {
-            Debug.Log(DebugUtilities.AddTimestampPrefix(m_team + " Projectile " + name + " reached target position, detonating!"));
+            //Debug.Log(DebugUtilities.AddTimestampPrefix(m_team + " Projectile " + name + " reached target position, detonating!"));
             Detonate();
         }
     }

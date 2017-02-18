@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class Explosion : MonoBehaviour
+public class Explosion : Entity
 {
     public GameObject m_effectPrefab;
     public SoundEffectPreset m_sfxPreset;
@@ -35,7 +35,7 @@ public class Explosion : MonoBehaviour
         }
 
         if (m_sfxPreset != null)
-            m_sfxPreset.PlayAt(transform.position);
+            m_sfxPreset.PlayAt(transform.position, GameManager.AudioRoot);
 
         if (m_drawRadius)
             CreateRadiusRenderer();
@@ -59,10 +59,10 @@ public class Explosion : MonoBehaviour
 
         if (m_lifeTime >= m_duration)
         {
-            Debug.Log(DebugUtilities.AddTimestampPrefix("Explosion Effect life expired after " + m_lifeTime + " seconds"));
+            //Debug.Log(DebugUtilities.AddTimestampPrefix("Explosion Effect life expired after " + m_lifeTime + " seconds"));
 
             // TODO: Cache the effect by ID instead of destroying it
-            Destroy(gameObject);
+            OnDeath(false);
         }
     }
 
@@ -89,5 +89,10 @@ public class Explosion : MonoBehaviour
         m_radiusRendererPositions = Math3D.GetCircleVertices(Vector3.zero, Vector3.forward, Vector3.up, m_radius - m_radiusRenderer.startWidth, m_radiusRendererPositions.Length);
         for (int i = 0; i < m_radiusRendererPositions.Length; i++) m_radiusRenderer.SetPosition(i, m_radiusRendererPositions[i]);
         m_radiusRenderer.SetPosition(m_radiusRenderer.numPositions - 1, m_radiusRendererPositions[0]);
+    }
+
+    protected override void OnTriggerEnter(Collider other)
+    {
+        // Do nothing
     }
 }

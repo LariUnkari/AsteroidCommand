@@ -67,11 +67,12 @@ public class SoundEffectPreset : ScriptableObject
 
         return m_volumeDefault;
     }
-
-    public void PlayAt(Vector3 position)
+    
+    public void PlayAt(Vector3 position, Transform parent)
     {
         GameObject go = new GameObject("AudioSource_" + name);
         go.transform.position = position;
+        go.transform.parent = parent;
 
         AudioSource source = go.AddComponent<AudioSource>();
         PlayOnSource(source);

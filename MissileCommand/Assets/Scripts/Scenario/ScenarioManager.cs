@@ -7,7 +7,10 @@ public class ScenarioManager : MonoBehaviour
 
     private ScenarioPreset m_preset;
 
-    private float m_scenarioTime;
+    private bool m_roundStarted;
+    private int m_roundIndex;
+    private float m_roundTime;
+
     private int m_currentWaveIndex;
     private int m_nextWaveIndex;
     private int m_firstActiveWaveIndex;
@@ -23,7 +26,7 @@ public class ScenarioManager : MonoBehaviour
 
     private Rect m_gameArea;
 
-    public static float ScenarioTime { get { return s_instance != null ? s_instance.m_scenarioTime : -1f; } }
+    public static float RoundTime { get { return s_instance != null ? s_instance.m_roundTime : -1f; } }
     public static int WaveIndex { get { return s_instance != null ? s_instance.m_currentWaveIndex : -1; } }
     public static int Score { get { return s_instance != null ? s_instance.m_playerScore : -1; } }
     public static int ShotsFired { get { return s_instance != null ? s_instance.m_playerShotsFired : -1; } }
@@ -44,10 +47,7 @@ public class ScenarioManager : MonoBehaviour
     {
         m_preset = preset;
 
-        m_scenarioTime = 0f;
-        m_currentWaveIndex = -1;
-        m_nextWaveIndex = -1;
-        m_firstActiveWaveIndex = 0;
+        m_roundStarted = false;
 
         m_waves = new List<ScenarioWave>();
         m_entities = new Dictionary<int, Entity>();
@@ -66,6 +66,8 @@ public class ScenarioManager : MonoBehaviour
 
         UserInterface.SetScore(m_playerScore);
         UserInterface.SetShotsFired(m_playerShotsFired);
+
+        StartRound(0);
     }
 
     private void SetupGameArea()
@@ -86,25 +88,27 @@ public class ScenarioManager : MonoBehaviour
 
     private void Update()
     {
-        // Don't update scenario time on the first frame
-        if (m_nextWaveIndex == -1)
-            m_nextWaveIndex = 0;
-        else
-            m_scenarioTime += Time.deltaTime;
+        if (m_roundStarted)
+            UpdateRound();
+    }
+
+    private void UpdateRound()
+    {
+        m_roundTime += Time.deltaTime;
 
         // Begin a new wave if it's time for it
         if (m_nextWaveIndex < m_waves.Count)
         {
             m_cachedWave = m_waves[m_nextWaveIndex];
-            if (m_cachedWave.ShouldBegin(m_scenarioTime))
+            if (m_cachedWave.ShouldBegin(m_roundTime))
             {
-                m_cachedWave.Begin(m_scenarioTime);
+                m_cachedWave.Begin(m_roundTime);
 
                 m_currentWaveIndex = m_nextWaveIndex;
                 m_nextWaveIndex++;
             }
         }
-        
+
         // Update all active waves
         for (int i = m_firstActiveWaveIndex; i <= m_currentWaveIndex; i++)
         {
@@ -120,21 +124,62 @@ public class ScenarioManager : MonoBehaviour
         }
     }
 
-    public void StartRoundEnd()
+    public void StartRound(int index)
+    {
+        m_roundIndex = index;
+
+        GameManager.SetVolume(0f);
+
+        m_roundTime = 0f;
+
+        m_currentWaveIndex = -1;
+        m_nextWaveIndex = 0;
+        m_firstActiveWaveIndex = 0;
+
+        StartCoroutine(RoundStartRoutine());
+    }
+
+    private System.Collections.IEnumerator RoundStartRoutine()
+    {
+        yield return new WaitForSecondsRealtime(1f);
+
+        UserInterface.ShowRoundStartWidget(m_roundIndex);
+
+        if (UserInterface.RoundStartSFX != null)
+        {
+            float repeatInterval = 0.3f;
+            int repeatCount = 4;
+
+            int repeats = repeatCount;
+            while (repeats-- > 0)
+            {
+                UserInterface.RoundStartSFX.PlayAt(Camera.main.transform.position, GameManager.AudioRoot);
+
+                yield return new WaitForSecondsRealtime(repeatInterval);
+            }
+
+            yield return new WaitForSecondsRealtime(2f - repeatCount * repeatInterval);
+        }
+        else
+            yield return new WaitForSecondsRealtime(2f);
+
+        UserInterface.HideRoundStartWidget();
+        m_roundStarted = true;
+    }
+
+    public void EndRound(bool success)
     {
         Debug.Log(DebugUtilities.AddTimestampPrefix("Round is ending..."));
 
         if (GameManager.ActivePlayerController != null)
             GameManager.ActivePlayerController.Disable();
 
-        StartCoroutine(RoundEndRoutine());
+        StartCoroutine(RoundEndRoutine(success));
     }
 
-    private System.Collections.IEnumerator RoundEndRoutine()
+    private System.Collections.IEnumerator RoundEndRoutine(bool success)
     {
-        Time.timeScale = 0f;
-
-        UserInterface.ShowRoundEndWidget(true);
+        UserInterface.ShowRoundEndWidget(success);
         UserInterface.SetPenaltyAmount(0);
 
         yield return new WaitForSecondsRealtime(1f);
@@ -152,7 +197,7 @@ public class ScenarioManager : MonoBehaviour
             penaltyCycleInterval = Mathf.Clamp(optimalPenaltyCycleDuration / m_playerShotsFired, minimumPenaltyCycleInterval, maximumPenaltyCycleInterval);
 
         Debug.Log(DebugUtilities.AddTimestampPrefix("Shots penalty being applied! Cycle interval: " + penaltyCycleInterval));
-
+        
         int penaltyAmount = 0;
         while (m_playerShotsFired > 0)
         {
@@ -160,18 +205,19 @@ public class ScenarioManager : MonoBehaviour
             ModifyScore(-5);
 
             penaltyAmount += 5;
-            UserInterface.SetPenaltyAmount(penaltyAmount);
+            UserInterface.SetPenaltyAmount(-penaltyAmount);
 
             if (penaltySFX != null)
-                penaltySFX.PlayAt(Camera.main.transform.position);
+                penaltySFX.PlayAt(Camera.main.transform.position, GameManager.AudioRoot);
 
             yield return new WaitForSecondsRealtime(penaltyCycleInterval);
         }
 
         yield return new WaitForSecondsRealtime(2f);
 
-        UserInterface.ShowRoundEndWidget(false);
+        UserInterface.HideRoundEndWidget();
 
+        // TODO: Cache entities instead of outright destroying them
         foreach (Entity e in m_entities.Values)
             Destroy(e.gameObject);
 
@@ -258,11 +304,22 @@ public class ScenarioManager : MonoBehaviour
 
     public static void OnEntityDeath(Entity entity, bool giveScore)
     {
+        if (s_instance != null)
+            s_instance.OnEntityDeathInternal(entity, giveScore);
+    }
+
+    private void OnEntityDeathInternal(Entity entity, bool giveScore)
+    {
         if (giveScore && entity.m_team == Team.Enemy)
             ModifyScore(entity.m_killScore);
 
-        if (s_instance != null)
-            s_instance.m_entities.Remove(entity.ID);
+        m_entities.Remove(entity.ID);
+
+        if (m_entities.Count == 0 && m_currentWaveIndex == m_waves.Count - 1)
+        {
+            // All waves cleared, player won the round
+            OnRoundEnd(true);
+        }
     }
 
     public static void OnPlayerHit()
@@ -271,11 +328,11 @@ public class ScenarioManager : MonoBehaviour
             GameManager.ActivePlayerController.Disable();
     }
 
-    public static void OnRoundEnd()
+    public static void OnRoundEnd(bool success)
     {
         if (s_instance == null)
             return;
 
-        s_instance.StartRoundEnd();
+        s_instance.EndRound(success);
     }
 }

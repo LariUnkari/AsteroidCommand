@@ -54,7 +54,7 @@ public class PlayerController : MonoBehaviour
                 }
 
                 if (m_fireSFX != null)
-                    m_fireSFX.PlayAt(m_muzzleTransform.position);
+                    m_fireSFX.PlayAt(m_muzzleTransform.position, GameManager.AudioRoot);
                 
                 ScenarioManager.ModifyShotsFired(1);
             }

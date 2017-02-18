@@ -52,6 +52,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe5fdc8cdf7b61b47aa09cb93b048aa4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_team: 1
+  m_killScore: 0
   m_effectPrefab: {fileID: 1040887182068010, guid: 3fe9b9c6861727c438a176cde1050bac,
     type: 2}
   m_sfxPreset: {fileID: 11400000, guid: aec33b29f8f0bfe449657e30ee41dddc, type: 2}
