@@ -17,7 +17,7 @@ public class FuseProjectile : Projectile
         
         m_targetPosition = targetPosition;
 
-        m_targetCursor = Instantiate<GameObject>(m_targetCursorPrefab, m_targetPosition, Quaternion.LookRotation(Vector3.forward, Vector3.up), GameManager.UIRoot);
+        m_targetCursor = Instantiate<GameObject>(m_targetCursorPrefab, m_targetPosition, Quaternion.LookRotation(Vector3.forward, Vector3.up), UserInterface.Root);
 
         // TODO: Make a global speed modifier instead of static 0.1 multiplier
         m_travelDuration = Vector3.Distance(m_targetPosition, m_startPosition) / (0.1f * m_speed);

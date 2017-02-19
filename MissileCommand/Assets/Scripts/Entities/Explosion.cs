@@ -35,7 +35,7 @@ public class Explosion : Entity
         }
 
         if (m_sfxPreset != null)
-            m_sfxPreset.PlayAt(transform.position, GameManager.AudioRoot);
+            m_sfxPreset.PlayAt(transform.position, Environment.AudioRoot);
 
         if (m_drawRadius)
             CreateRadiusRenderer();

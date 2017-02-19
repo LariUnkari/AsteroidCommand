@@ -30,6 +30,7 @@ public class ScenarioPreset : ScriptableObject
             new AnimationCurve(new Keyframe[] { new Keyframe(0f, 0f), new Keyframe(1f, 1f) });
     }
 
+    public GameObject m_playerPrefab;
     public Enemy[] m_enemyPresets = new Enemy[] { new Enemy() };
 
     public int m_waveCountMin = 10;                 // Minimum number of waves to consider

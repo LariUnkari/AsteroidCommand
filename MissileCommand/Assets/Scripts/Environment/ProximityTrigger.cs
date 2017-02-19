@@ -30,7 +30,7 @@ public class ProximityTrigger : MonoBehaviour
         if ((m_triggerMask.value & (1 << other.gameObject.layer)) > 0)
         {
             Debug.Log(typeof(ProximityTrigger) + " " + name + " was triggered by " + other.name, other);
-            m_triggerSFX.PlayAt(Camera.main.transform.position + Camera.main.transform.forward, GameManager.AudioRoot);
+            m_triggerSFX.PlayAt(Camera.main.transform.position + Camera.main.transform.forward, Environment.AudioRoot);
             m_timeSinceLastTrigger = 0f;
         }
     }

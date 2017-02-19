@@ -18,6 +18,8 @@ public class ScenarioManager : MonoBehaviour
 
     private Rect m_gameArea;
 
+    public static bool IsLoaded { get { return s_instance != null; } }
+
     public static int Score { get { return s_instance != null ? s_instance.m_playerScore : -1; } }
     public static int ShotsFired { get { return s_instance != null ? s_instance.m_playerShotsFired : -1; } }
 
@@ -34,14 +36,26 @@ public class ScenarioManager : MonoBehaviour
         }
 
         s_instance = this;
+
+        Debug.Log(DebugUtilities.AddTimestampPrefix("ScenarioManager.Awake()"), this);
     }
 
-    public void InitializeScenario(ScenarioPreset preset)
+    public static void InitializeScenario(ScenarioPreset preset)
     {
+        if (s_instance != null)
+            s_instance.InitializeScenarioInternal(preset);
+    }
+
+    public void InitializeScenarioInternal(ScenarioPreset preset)
+    {
+        if (preset == null)
+        {
+            return;
+        }
+
         m_preset = preset;
 
         m_currentRound = null;
-        
         m_entities = new Dictionary<int, Entity>();
 
         SetupGameArea();
@@ -51,24 +65,35 @@ public class ScenarioManager : MonoBehaviour
 
         UserInterface.SetScore(m_playerScore);
 
+        if (m_preset.m_playerPrefab != null)
+        {
+            Vector3 position = Environment.PlayerSpawn != null ? Environment.PlayerSpawn.position : Vector3.zero;
+            Quaternion rotation = Environment.PlayerSpawn != null ? Environment.PlayerSpawn.rotation : Quaternion.identity;
+            GameObject go = Instantiate<GameObject>(m_preset.m_playerPrefab, position, rotation, Environment.EntityRoot);
+            go.name = m_preset.m_playerPrefab.name;
+
+            // TODO: Pick a suitable controller type, AI or Player
+            PlayerController pc = go.GetComponent<PlayerController>();
+            GameManager.SetActiveTurretController(pc);
+            pc.SetCanControl(false);
+        }
+        else
+            Debug.LogError(DebugUtilities.AddTimestampPrefix("ScenarioPreset doesn't define a player prefab!"), m_preset);
+
         Time.timeScale = 1f;
         StartRound(0);
     }
 
     private void SetupGameArea()
     {
-        Ray cameraRay;
-        Vector3 bottomLeft, topRight;
+        // Limit the game area into a 4:3 shape
+        float width = 4f * Camera.main.orthographicSize * 2f / 3f;
+        Vector3 topRight = Camera.main.transform.position + new Vector3(width / 2f, Camera.main.orthographicSize, -Camera.main.transform.position.z);
+        Vector3 bottomLeft = Camera.main.transform.position - new Vector3(width / 2f, Camera.main.orthographicSize, Camera.main.transform.position.z);
 
-        cameraRay = Camera.main.ViewportPointToRay(Vector3.zero);
-        Math3D.VectorPlaneIntersect(cameraRay.origin, cameraRay.direction, Vector3.zero, Vector3.back, out bottomLeft);
-
-        cameraRay = Camera.main.ViewportPointToRay(Vector2.one);
-        Math3D.VectorPlaneIntersect(cameraRay.origin, cameraRay.direction, Vector3.zero, Vector3.back, out topRight);
-
-        m_gameArea = new Rect(bottomLeft.x, bottomLeft.y, topRight.x - bottomLeft.x, topRight.y - bottomLeft.y);
-
-        //DebugUtilities.DrawArrow(bottomLeft, topRight, Vector3.back, Color.blue, 0, 0.5f);
+        // Lift up the game area bottom to floor level
+        m_gameArea = new Rect(bottomLeft.x, 0f, topRight.x - bottomLeft.x, topRight.y - 0f);
+        DebugUtilities.DrawArrow(bottomLeft, topRight, Vector3.back, Color.blue, 0, 0.5f);
     }
 
     private void Update()
@@ -105,23 +130,7 @@ public class ScenarioManager : MonoBehaviour
 
         UserInterface.ShowRoundStartWidget(m_currentRound.Index);
 
-        if (UserInterface.RoundStartSFX != null)
-        {
-            float repeatInterval = 0.3f;
-            int repeatCount = 4;
-
-            int repeats = repeatCount;
-            while (repeats-- > 0)
-            {
-                UserInterface.RoundStartSFX.PlayAt(Camera.main.transform.position, GameManager.AudioRoot);
-
-                yield return new WaitForSecondsRealtime(repeatInterval);
-            }
-
-            yield return new WaitForSecondsRealtime(2f - repeatCount * repeatInterval);
-        }
-        else
-            yield return new WaitForSecondsRealtime(2f);
+        yield return UserInterface.StartAlertRoutine();
 
         UserInterface.HideRoundStartWidget();
         m_currentRound.Start();
@@ -162,7 +171,7 @@ public class ScenarioManager : MonoBehaviour
         if (success)
             StartRound(m_nextRoundIndex);
         else
-            InitializeScenario(m_preset);
+            InitializeScenarioInternal(m_preset);
     }
 
     public static void ModifyScore(int amount)
@@ -244,7 +253,7 @@ public class ScenarioManager : MonoBehaviour
 
     public Entity OnSpawnEntityInternal(GameObject prefab, Vector3 position, Quaternion rotation)
     {
-        GameObject go = Instantiate<GameObject>(prefab, position, rotation, GameManager.EntityRoot);
+        GameObject go = Instantiate<GameObject>(prefab, position, rotation, Environment.EntityRoot);
 
         Entity entity = go.GetComponent<Entity>();
         if (entity != null)
@@ -281,7 +290,7 @@ public class ScenarioManager : MonoBehaviour
     public static void OnPlayerHit()
     {
         if (GameManager.ActivePlayerController != null)
-            GameManager.ActivePlayerController.SetActive(false);
+            GameManager.ActivePlayerController.OnHit();
     }
 
     public static void OnRoundEnd(bool success)

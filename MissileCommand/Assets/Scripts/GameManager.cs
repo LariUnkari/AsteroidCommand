@@ -4,25 +4,22 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
+    public enum State { Init, Game };
+
     public static GameManager s_instance;
 
     public ScenarioPreset m_scenario;
 
     public AudioMixer m_audioMixer;
-    public Transform m_audioRoot;
 
-    public Transform m_entityRoot;
-    public Transform m_uiRoot;
+    private State m_state;
 
-    private PlayerController m_activePlayerController;
+    private TurretController m_activeTurretController;
+
+    public static bool IsLoaded { get { return s_instance != null; } }
 
     public static AudioMixer AudioMixer { get { return s_instance != null ? s_instance.m_audioMixer : null; } }
-    public static Transform AudioRoot { get { return s_instance != null ? s_instance.m_audioRoot : null; } }
-
-    public static Transform EntityRoot { get { return s_instance != null ? s_instance.m_entityRoot : null; } }
-    public static Transform UIRoot { get { return s_instance != null ? s_instance.m_uiRoot : null; } }
-
-    public static PlayerController ActivePlayerController { get { return s_instance != null ? s_instance.m_activePlayerController : null; } }
+    public static TurretController ActivePlayerController { get { return s_instance != null ? s_instance.m_activeTurretController : null; } }
 
     private void Awake()
     {
@@ -33,12 +30,10 @@ public class GameManager : MonoBehaviour
             return;
         }
 
+        m_state = State.Init;
         s_instance = this;
 
-        if (!UserInterface.IsLoaded)
-            SceneManager.LoadScene("UserInterface", LoadSceneMode.Additive);
-        else
-            Debug.LogWarning("UserInterface scene was already loaded!");
+        Debug.Log(DebugUtilities.AddTimestampPrefix("GameManager.Awake()"), this);
     }
 
     private void Start()
@@ -47,22 +42,53 @@ public class GameManager : MonoBehaviour
 
         SetVolume(-80f);
 
+        if (!UserInterface.IsLoaded)
+        {
+            Debug.Log(DebugUtilities.AddTimestampPrefix("Loading in UserInterface scene..."));
+            SceneManager.LoadScene("UserInterface", LoadSceneMode.Additive);
+        }
+        else
+        {
+            Debug.Log(DebugUtilities.AddTimestampPrefix("UserInterface scene was already loaded!"));
+            InitGame();
+        }
+    }
+
+    private void InitGame()
+    {
         if (m_scenario != null)
         {
-            GameObject go = new GameObject("ScenarioManager");
-            ScenarioManager sm = go.AddComponent<ScenarioManager>();
-            sm.InitializeScenario(m_scenario);
+            if (!ScenarioManager.IsLoaded)
+            {
+                GameObject go = new GameObject("ScenarioManager");
+                go.AddComponent<ScenarioManager>();
+            }
+
+            ScenarioManager.InitializeScenario(m_scenario);
+
+            Cursor.visible = false;
+            m_state = State.Game;
         }
         else
             Debug.LogError(DebugUtilities.AddTimestampPrefix("No Scenario provided!"));
     }
 
-    public static void SetActivePlayerController(PlayerController playerController)
+    private void Update()
+    {
+        if (m_state == State.Init && UserInterface.IsLoaded)
+            InitGame();
+
+        // TODO: Create a simple pause menu for this
+        if (Input.GetKeyDown(KeyCode.Escape))
+            Application.Quit();
+    }
+
+    public static void SetActiveTurretController(TurretController turretController)
     {
         if (s_instance == null)
             return;
 
-        s_instance.m_activePlayerController = playerController;
+        s_instance.m_activeTurretController = turretController;
     }
 
     public static void SetVolume(float volume)

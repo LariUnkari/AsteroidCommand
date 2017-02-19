@@ -7,22 +7,21 @@ public class ScenarioRound
     private int m_index;
 
     private bool m_hasStarted;
-    private bool m_hasEnded;
+    //private bool m_hasEnded;
 
     private float m_time;
     
     private ScenarioWave[] m_waves;
 
     private ScenarioWave m_cachedWave;
-
-    private int m_firstActiveWaveIndex;
+    
     private int m_currentWaveIndex;
     private int m_nextWaveIndex;
 
     public int Index { get { return m_index; } }
     public float Time { get { return m_time; } }
     public bool HasStarted { get { return m_hasStarted; } }
-    public bool HasEnded { get { return m_hasEnded; } }
+    //public bool HasEnded { get { return m_hasEnded; } }
     public int WaveIndex { get { return m_currentWaveIndex; } }
     public bool IsLastWave { get { return m_currentWaveIndex == m_waves.Length - 1; } }
 
@@ -39,7 +38,6 @@ public class ScenarioRound
 
         m_currentWaveIndex = -1;
         m_nextWaveIndex = 0;
-        m_firstActiveWaveIndex = 0;
     }
 
     public void Start()
@@ -47,13 +45,19 @@ public class ScenarioRound
         m_hasStarted = true;
 
         if (GameManager.ActivePlayerController != null)
-            GameManager.ActivePlayerController.SetActive(true);
+        {
+            GameManager.ActivePlayerController.SetCanFire(true);
+            GameManager.ActivePlayerController.SetCanControl(true);
+        }
     }
 
     public void End()
     {
         if (GameManager.ActivePlayerController != null)
-            GameManager.ActivePlayerController.SetActive(false);
+        {
+            GameManager.ActivePlayerController.SetCanFire(false);
+            GameManager.ActivePlayerController.SetCanControl(false);
+        }
     }
 
     public void Update(float deltaTime)

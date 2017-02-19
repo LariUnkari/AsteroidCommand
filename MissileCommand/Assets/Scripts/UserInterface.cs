@@ -13,7 +13,11 @@ public class UserInterface : MonoBehaviour
     public GameObject m_roundStartWidget;
     public Text m_roundIndex;
     public string m_roundIndexFormat = "{0}";
+
     public SoundEffectPreset m_roundStartSFX;
+    public float m_roundStartTimeLimit = 2f;
+    public float m_alertInterval = 0.3f;
+    public int m_alertSoundCount = 4;
 
     public GameObject m_roundEndWidget;
     public Text m_roundEndMessage;
@@ -31,8 +35,9 @@ public class UserInterface : MonoBehaviour
 
     public static bool IsLoaded { get { return s_instance != null; } }
 
+    public static Transform Root { get { return s_instance != null ? s_instance.transform : null; } }
+
     public static SoundEffectPreset RoundStartSFX { get { return s_instance != null ? s_instance.m_roundStartSFX : null; } }
-    public static SoundEffectPreset PenaltyPointSFX { get { return s_instance != null ? s_instance.m_penaltyPointSFX : null; } }
 
     private void Awake()
     {
@@ -48,7 +53,7 @@ public class UserInterface : MonoBehaviour
         HideRoundStartWidget();
         HideRoundEndWidget();
 
-        Debug.Log(DebugUtilities.AddTimestampPrefix("UserInterface initialized!"), this);
+        Debug.Log(DebugUtilities.AddTimestampPrefix("UserInterface.Awake()"), this);
     }
 
     public static void ShowRoundStartWidget(int roundIndex)
@@ -61,6 +66,32 @@ public class UserInterface : MonoBehaviour
             s_instance.m_roundIndex.text = string.Format(s_instance.m_roundIndexFormat, roundIndex + 1);
             s_instance.m_roundStartWidget.SetActive(true);
         }
+    }
+
+    public static Coroutine StartAlertRoutine()
+    {
+        if (s_instance == null)
+            return null;
+
+        return s_instance.StartCoroutine(s_instance.AlertRoutine());
+    }
+
+    public System.Collections.IEnumerator AlertRoutine()
+    {
+        if (UserInterface.RoundStartSFX != null)
+        {
+            int repeats = m_alertSoundCount;
+            while (repeats-- > 0)
+            {
+                UserInterface.RoundStartSFX.PlayAt(Camera.main.transform.position, Environment.AudioRoot);
+
+                yield return new WaitForSecondsRealtime(m_alertInterval);
+            }
+            
+            yield return new WaitForSecondsRealtime(m_roundStartTimeLimit - m_alertSoundCount * m_alertInterval);
+        }
+        else
+            yield return new WaitForSecondsRealtime(m_roundStartTimeLimit);
     }
 
     public static void HideRoundStartWidget()
@@ -83,10 +114,10 @@ public class UserInterface : MonoBehaviour
 
     public static Coroutine StartPenaltyRoutine(int playerShotsFired)
     {
-        if (s_instance != null)
-            return s_instance.StartCoroutine(s_instance.PenaltyRoutine(playerShotsFired));
+        if (s_instance == null)
+            return null;
 
-        return null;
+        return s_instance.StartCoroutine(s_instance.PenaltyRoutine(playerShotsFired));
     }
 
     public System.Collections.IEnumerator PenaltyRoutine(int playerShotsFired)
@@ -108,7 +139,7 @@ public class UserInterface : MonoBehaviour
             SetPenaltyAmount(-penaltyAmount);
 
             if (m_penaltyPointSFX != null)
-                m_penaltyPointSFX.PlayAt(Camera.main.transform.position, GameManager.AudioRoot);
+                m_penaltyPointSFX.PlayAt(Camera.main.transform.position, Environment.AudioRoot);
 
             yield return new WaitForSecondsRealtime(penaltyCycleInterval);
         }

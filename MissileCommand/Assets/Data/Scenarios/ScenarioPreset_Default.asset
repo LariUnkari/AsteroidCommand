@@ -11,6 +11,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9aebff5072a2d4488c7177e65d6ed78, type: 3}
   m_Name: ScenarioPreset_Default
   m_EditorClassIdentifier: 
+  m_playerPrefab: {fileID: 1942241782462228, guid: d5474147a0880084cb23b3cedb1cb119,
+    type: 2}
   m_enemyPresets:
   - m_enemyPrefab: {fileID: 1980887535671264, guid: 4ee1243316335bd46ac5eb4350970bbf,
       type: 2}

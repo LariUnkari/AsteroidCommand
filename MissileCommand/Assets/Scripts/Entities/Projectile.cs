@@ -82,7 +82,7 @@ public class Projectile : Entity
             if (obj.tag == "Ground")
             {
                 if (m_hitSFX != null)
-                    m_hitSFX.PlayAt(transform.position, GameManager.AudioRoot);
+                    m_hitSFX.PlayAt(transform.position, Environment.AudioRoot);
 
                 Detonate();
 
@@ -91,7 +91,7 @@ public class Projectile : Entity
             else if (obj.tag == "Player")
             {
                 if (m_hitSFX != null)
-                    m_hitSFX.PlayAt(transform.position, GameManager.AudioRoot);
+                    m_hitSFX.PlayAt(transform.position, Environment.AudioRoot);
 
                 Detonate();
 

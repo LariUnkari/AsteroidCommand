@@ -133,6 +133,9 @@ MonoBehaviour:
   m_penaltyAmount: {fileID: 1689332929}
   m_penaltyFormat: '{0:D}'
   m_penaltyPointSFX: {fileID: 11400000, guid: f6b3761391dd0c2419793714ad356f4f, type: 2}
+  m_penaltyPointInterval: 0.3
+  m_penaltySpeedUpTimeLimit: 3
+  m_penaltyPointIntervalMin: 0.1
 --- !u!4 &244345949
 Transform:
   m_ObjectHideFlags: 0
@@ -999,7 +1002,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: DEPLOYING DEFENSES
+  m_Text: INCOMING ATTACK
 --- !u!222 &2015979283
 CanvasRenderer:
   m_ObjectHideFlags: 0
