@@ -73,7 +73,8 @@ MonoBehaviour:
   m_trailRenderer: {fileID: 120882595468684972}
   m_modelRotateVelocity: {x: 0, y: 0, z: 72}
   m_hitSFX: {fileID: 11400000, guid: dda2c85e4fbbca64e879f0aa08d9a6c5, type: 2}
-  m_detonateEffectPrefab: {fileID: 0}
+  m_detonateEffectPrefab: {fileID: 1369375611097916, guid: fc57dc53ddd1f714c942bda5e84dfb9c,
+    type: 2}
 --- !u!120 &120882595468684972
 LineRenderer:
   m_ObjectHideFlags: 1

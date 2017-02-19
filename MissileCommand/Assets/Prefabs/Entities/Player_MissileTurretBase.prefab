@@ -150,6 +150,7 @@ GameObject:
   - component: {fileID: 54167202412417970}
   - component: {fileID: 114471748729206700}
   - component: {fileID: 114983179817653012}
+  - component: {fileID: 114395848805455570}
   m_Layer: 8
   m_Name: Player_MissileTurretBase
   m_TagString: Player
@@ -431,6 +432,23 @@ Animator:
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
+--- !u!114 &114395848805455570
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1942241782462228}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b82c8d33033824f4c973a8fc8f5439c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_cursorTargetPrefab: {fileID: 1222388890615038, guid: 7bf753da0b7b05a41b9f2bc5cce0aa9e,
+    type: 2}
+  m_turret: {fileID: 114471748729206700}
+  m_defaultScanInterval: 0.75
+  m_defaultTargetSeekInterval: 0.5
+  m_perRoundSpeedUp: 1.05
 --- !u!114 &114471748729206700
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -442,6 +460,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1645b328992e6c419c9b96cdd6973cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_team: 1
+  m_killScore: 25
   m_projectilePrefab: {fileID: 1980887535671264, guid: 50b281fa3175d67439bfc2a012e96991,
     type: 2}
   m_projectileModelPrefab: {fileID: 1426889442096822, guid: e5fae589d2de7d246b6e0928fc96eb2d,

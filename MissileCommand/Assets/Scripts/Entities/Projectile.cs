@@ -12,23 +12,33 @@ public class Projectile : Entity
     public GameObject m_detonateEffectPrefab;
     
     protected Vector3 m_startPosition;
+    protected Vector3 m_targetPosition;
     protected float m_speed;
 
-    private Transform m_modelTransform;
+    protected Vector3 m_velocity;
+    protected float m_movementSpeed;
 
-    private bool m_isInitialized;
+    protected Transform m_modelTransform;
+
+    protected bool m_isInitialized;
+
+    public Vector3 TargetPosition { get { return m_targetPosition; } }
+    public float Speed { get { return m_speed; } }
+    public Vector3 Velocity { get { return m_velocity; } }
 
     private void Start()
     {
         if (!m_isInitialized)
-            Initialize(-1, transform.position, 5f, null);
+            Initialize(-1, transform.position, Vector3.zero, 5f, null);
     }
 
-    public virtual void Initialize(int id, Vector3 startPosition, float speed, GameObject modelPrefab)
+    public virtual void Initialize(int id, Vector3 startPosition, Vector3 targetPosition, float speed, GameObject modelPrefab)
     {
         base.Initialize(id);
 
         m_startPosition = startPosition;
+        m_targetPosition = targetPosition;
+
         m_speed = speed;
 
         if (modelPrefab != null)
@@ -52,7 +62,9 @@ public class Projectile : Entity
         if (m_modelTransform != null)
             m_modelTransform.Rotate(m_modelRotateVelocity * Time.deltaTime, Space.Self);
 
-        transform.position = transform.position + transform.forward * Time.deltaTime * 0.1f * m_speed;
+        m_velocity = transform.forward * m_speed;
+        m_movementSpeed = m_velocity.magnitude;
+        transform.position = transform.position + m_velocity * Time.deltaTime;
 
         UpdateTrail();
     }
@@ -71,6 +83,13 @@ public class Projectile : Entity
         OnDeath(false);
     }
 
+    public override void OnRoundEnded(bool success)
+    {
+        base.OnRoundEnded(success);
+
+        m_speed = 0f;
+    }
+
     protected override void OnTriggerEnter(Collider other)
     {
         Component obj = other.attachedRigidbody != null ? (Component)other.attachedRigidbody : (Component)other;
@@ -86,7 +105,7 @@ public class Projectile : Entity
 
                 Detonate();
 
-                ScenarioManager.OnRoundEnd(false);
+                ScenarioManager.EndRound(false);
             }
             else if (obj.tag == "Player")
             {

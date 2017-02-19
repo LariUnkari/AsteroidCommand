@@ -25,13 +25,16 @@ public class Explosion : Entity
     {
         m_lifeTime = -1f;
 
-        m_radius = m_radiusModifierCurve.Evaluate(0f);
-        m_collider.radius = m_radius;
+        m_radius = m_maxRadius * m_radiusModifierCurve.Evaluate(0f);
+
+        if (m_collider != null)
+            m_collider.radius = m_radius;
 
         if (m_effectPrefab != null)
         {
             GameObject go = Instantiate<GameObject>(m_effectPrefab, transform.position, transform.rotation, transform);
             m_effectTransform = go.transform;
+            m_effectTransform.localScale = Vector3.one * m_radius;
         }
 
         if (m_sfxPreset != null)
@@ -48,8 +51,10 @@ public class Explosion : Entity
         else
             m_lifeTime += Time.deltaTime;
         
-        m_radius = m_radiusModifierCurve.Evaluate(Mathf.Clamp01(m_lifeTime / m_duration));
-        m_collider.radius = m_radius;
+        m_radius = m_maxRadius * m_radiusModifierCurve.Evaluate(Mathf.Clamp01(m_lifeTime / m_duration));
+
+        if (m_collider != null)
+            m_collider.radius = m_radius;
 
         if (m_effectTransform != null)
             m_effectTransform.localScale = Vector3.one * m_radius;

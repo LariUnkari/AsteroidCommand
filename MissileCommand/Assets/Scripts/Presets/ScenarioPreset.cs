@@ -33,6 +33,8 @@ public class ScenarioPreset : ScriptableObject
     public GameObject m_playerPrefab;
     public Enemy[] m_enemyPresets = new Enemy[] { new Enemy() };
 
+    public float m_globalSpeedMultiplier = 0.1f;    // Just to make controlling game speed easier
+
     public int m_waveCountMin = 10;                 // Minimum number of waves to consider
     public int m_waveCountMax = 20;                 // Maximum number of waves to consider
     public int m_waveCountRoundMax = 10;            // Round number (starts from 1) to reach maximum wave count on

@@ -87,6 +87,7 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 0
+  m_globalSpeedMultiplier: 0.15
   m_waveCountMin: 10
   m_waveCountMax: 20
   m_waveCountRoundMax: 20

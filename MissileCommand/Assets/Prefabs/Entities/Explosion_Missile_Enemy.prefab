@@ -19,10 +19,9 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4365638353443146}
-  - component: {fileID: 135501785823762720}
   - component: {fileID: 114327028177413564}
   m_Layer: 0
-  m_Name: Explosion_Missile_Player
+  m_Name: Explosion_Missile_Enemy
   m_TagString: Fire
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -52,60 +51,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe5fdc8cdf7b61b47aa09cb93b048aa4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_team: 1
+  m_team: 0
   m_killScore: 0
-  m_effectPrefab: {fileID: 1040887182068010, guid: 3fe9b9c6861727c438a176cde1050bac,
+  m_effectPrefab: {fileID: 1144125868026428, guid: 08696b48e5c859840bed0ff45c5842d6,
     type: 2}
   m_sfxPreset: {fileID: 11400000, guid: aec33b29f8f0bfe449657e30ee41dddc, type: 2}
-  m_duration: 3
-  m_maxRadius: 1
+  m_duration: 10
+  m_maxRadius: 0
   m_radiusModifierCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 2
       time: 0
-      value: 0.100000024
-      inSlope: 11.509262
-      outSlope: 11.509262
-      tangentMode: 0
-    - serializedVersion: 2
-      time: 0.19999999
       value: 1
       inSlope: 0
       outSlope: 0
-      tangentMode: 0
-    - serializedVersion: 2
-      time: 0.59999996
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-    - serializedVersion: 2
-      time: 0.8154056
-      value: 0.8427712
-      inSlope: -1.4178128
-      outSlope: -1.4178128
       tangentMode: 0
     - serializedVersion: 2
       time: 1
-      value: 0
-      inSlope: -9.019857
-      outSlope: -9.019857
+      value: 1
+      inSlope: 0
+      outSlope: 0
       tangentMode: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 0
-  m_collider: {fileID: 135501785823762720}
+  m_collider: {fileID: 0}
   m_drawRadius: 0
---- !u!135 &135501785823762720
-SphereCollider:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1369375611097916}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 1
-  m_Center: {x: 0, y: 0, z: 0}

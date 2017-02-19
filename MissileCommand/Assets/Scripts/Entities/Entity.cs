@@ -14,6 +14,21 @@ public abstract class Entity : MonoBehaviour
     public virtual void Initialize(int id)
     {
         m_id = id;
+
+        ScenarioManager.OnRoundStartedCallback += OnRoundStarted;
+        ScenarioManager.OnRoundEndedCallback += OnRoundEnded;
+    }
+
+    protected abstract void OnTriggerEnter(Collider other);
+
+    public virtual void OnRoundStarted(int index)
+    {
+        // Do nothing
+    }
+
+    public virtual void OnRoundEnded(bool success)
+    {
+        // Do nothing
     }
 
     protected virtual void OnDeath(bool giveScore)
@@ -22,5 +37,9 @@ public abstract class Entity : MonoBehaviour
         Destroy(gameObject);
     }
 
-    protected abstract void OnTriggerEnter(Collider other);
+    private void OnDestroy()
+    {
+        ScenarioManager.OnRoundStartedCallback -= OnRoundStarted;
+        ScenarioManager.OnRoundEndedCallback -= OnRoundEnded;
+    }
 }

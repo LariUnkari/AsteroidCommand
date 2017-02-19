@@ -9,7 +9,7 @@ public class Turret : Entity
 
     public SoundEffectPreset m_fireSFX;
 
-    public float m_projectileSpeed = 5f;
+    public float m_projectileSpeed = 30f;
 
     public Transform m_baseTransform;
     public Transform m_turretTransform;
@@ -55,7 +55,10 @@ public class Turret : Entity
 
                 FuseProjectile fp = pe as FuseProjectile;
                 if (fp != null)
-                    fp.Initialize(fp.ID, m_muzzleTransform.position, m_targetPosition, m_projectileSpeed, m_projectileModelPrefab);
+                {
+                    float speed = m_projectileSpeed * (ScenarioManager.Scenario != null ? ScenarioManager.Scenario.m_globalSpeedMultiplier : 1f);
+                    fp.Initialize(fp.ID, m_muzzleTransform.position, m_targetPosition, speed, m_projectileModelPrefab);
+                }
                 else
                     Debug.LogError(DebugUtilities.AddTimestampPrefix("Couldn't find FuseProjectile component in player missile prefab instance!"), pe);
             }

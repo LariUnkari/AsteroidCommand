@@ -7,20 +7,16 @@ public class FuseProjectile : Projectile
 
     private GameObject m_targetCursor;
 
-    private Vector3 m_targetPosition;
     private float m_travelDuration;
     private float m_travelT;
 
-    public void Initialize(int id, Vector3 startPosition, Vector3 targetPosition, float speed, GameObject modelPrefab)
+    public override void Initialize(int id, Vector3 startPosition, Vector3 targetPosition, float speed, GameObject modelPrefab)
     {
-        base.Initialize(id, startPosition, speed, modelPrefab);
-        
-        m_targetPosition = targetPosition;
+        base.Initialize(id, startPosition, targetPosition, speed, modelPrefab);
 
         m_targetCursor = Instantiate<GameObject>(m_targetCursorPrefab, m_targetPosition, Quaternion.LookRotation(Vector3.forward, Vector3.up), UserInterface.Root);
-
-        // TODO: Make a global speed modifier instead of static 0.1 multiplier
-        m_travelDuration = Vector3.Distance(m_targetPosition, m_startPosition) / (0.1f * m_speed);
+        
+        m_travelDuration = Vector3.Distance(m_targetPosition, m_startPosition) / m_speed;
         m_travelT = 0f;
     }
 

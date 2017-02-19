@@ -3,6 +3,15 @@ using System.Collections.Generic;
 
 public class ScenarioManager : MonoBehaviour
 {
+    public delegate void OnRoundStartedDelegate(int index);
+    public static OnRoundStartedDelegate OnRoundStartedCallback;
+    public delegate void OnRoundEndedDelegate(bool success);
+    public static OnRoundEndedDelegate OnRoundEndedCallback;
+    public delegate void OnEntitySpawnedDelegate(Entity entity);
+    public static OnEntitySpawnedDelegate OnEntitySpawnedCallback;
+    public delegate void OnEntityDeathDelegate(Entity entity);
+    public static OnEntityDeathDelegate OnEntityDeathCallback;
+
     public static ScenarioManager s_instance;
 
     private ScenarioPreset m_preset;
@@ -20,11 +29,16 @@ public class ScenarioManager : MonoBehaviour
 
     public static bool IsLoaded { get { return s_instance != null; } }
 
+    public static ScenarioPreset Scenario { get { return s_instance != null ? s_instance.m_preset : null; } }
+
     public static int Score { get { return s_instance != null ? s_instance.m_playerScore : -1; } }
     public static int ShotsFired { get { return s_instance != null ? s_instance.m_playerShotsFired : -1; } }
 
     public static float RoundTime { get { return s_instance != null && s_instance.m_currentRound != null ? s_instance.m_currentRound.Time : -1f; } }
+    public static int RoundIndex { get { return s_instance != null && s_instance.m_currentRound != null ? s_instance.m_currentRound.Index : -1; } }
     public static int WaveIndex { get { return s_instance != null && s_instance.m_currentRound != null ? s_instance.m_currentRound.WaveIndex : -1; } }
+
+    public static Rect GameArea { get { return s_instance != null ? s_instance.m_gameArea : new Rect(); } }
 
     private void Awake()
     {
@@ -49,8 +63,12 @@ public class ScenarioManager : MonoBehaviour
     public void InitializeScenarioInternal(ScenarioPreset preset)
     {
         if (preset == null)
-        {
             return;
+
+        if (m_preset != null)
+        {
+            if (GameManager.ActivePlayerController != null)
+                Destroy(GameManager.ActivePlayerController.gameObject);
         }
 
         m_preset = preset;
@@ -72,16 +90,25 @@ public class ScenarioManager : MonoBehaviour
             GameObject go = Instantiate<GameObject>(m_preset.m_playerPrefab, position, rotation, Environment.EntityRoot);
             go.name = m_preset.m_playerPrefab.name;
 
-            // TODO: Pick a suitable controller type, AI or Player
-            PlayerController pc = go.GetComponent<PlayerController>();
-            GameManager.SetActiveTurretController(pc);
-            pc.SetCanControl(false);
+            // TODO: Smartly pick a suitable controller type, AI or Player
+            TurretController tc = go.GetComponent<PlayerController>();
+            if (tc != null)
+            {
+                GameManager.SetActiveTurretController(tc);
+                tc.SetCanControl(false);
+            }
+            tc = go.GetComponent<AIController>();
+            if (tc != null)
+            {
+                tc.SetCanControl(false);
+                tc.SetActive(false);
+            }
         }
         else
             Debug.LogError(DebugUtilities.AddTimestampPrefix("ScenarioPreset doesn't define a player prefab!"), m_preset);
 
         Time.timeScale = 1f;
-        StartRound(0);
+        StartRoundInternal(0);
     }
 
     private void SetupGameArea()
@@ -112,7 +139,7 @@ public class ScenarioManager : MonoBehaviour
         }
     }
 
-    public void StartRound(int index)
+    public void StartRoundInternal(int index)
     {
         m_playerShotsFired = 0;
         UserInterface.SetShotsFired(m_playerShotsFired);
@@ -134,22 +161,25 @@ public class ScenarioManager : MonoBehaviour
 
         UserInterface.HideRoundStartWidget();
         m_currentRound.Start();
+
+        if (OnRoundStartedCallback != null)
+            OnRoundStartedCallback.Invoke(m_currentRound.Index);
     }
 
-    public void EndRound(bool success)
+    public void EndRoundInternal(bool success)
     {
         Debug.Log(DebugUtilities.AddTimestampPrefix("Round is ending..."));
+
         m_currentRound.End();
+
+        if (OnRoundEndedCallback != null)
+            OnRoundEndedCallback.Invoke(success);
 
         StartCoroutine(RoundEndRoutine(success));
     }
 
     private System.Collections.IEnumerator RoundEndRoutine(bool success)
     {
-        // Pause time on defeat
-        if (!success)
-            Time.timeScale = 0f;
-
         UserInterface.ShowRoundEndWidget(success);
         UserInterface.SetPenaltyAmount(0);
 
@@ -169,7 +199,7 @@ public class ScenarioManager : MonoBehaviour
         
         // TODO: Go to demo mode
         if (success)
-            StartRound(m_nextRoundIndex);
+            StartRoundInternal(m_nextRoundIndex);
         else
             InitializeScenarioInternal(m_preset);
     }
@@ -236,7 +266,8 @@ public class ScenarioManager : MonoBehaviour
             if (entity is Projectile)
             {
                 Projectile p = entity as Projectile;
-                p.Initialize(p.ID, startPosition, enemy.m_speed, enemy.m_modelPrefab);
+                float speed = enemy.m_speed * (ScenarioManager.Scenario != null ? ScenarioManager.Scenario.m_globalSpeedMultiplier : 1f);
+                p.Initialize(p.ID, startPosition, targetPosition, speed, enemy.m_modelPrefab);
             }
         }
 
@@ -245,10 +276,7 @@ public class ScenarioManager : MonoBehaviour
 
     public static Entity OnSpawnEntity(GameObject prefab, Vector3 position, Quaternion rotation)
     {
-        if (s_instance != null)
-            return s_instance.OnSpawnEntityInternal(prefab, position, rotation);
-
-        return null;
+        return s_instance == null ? null : s_instance.OnSpawnEntityInternal(prefab, position, rotation);
     }
 
     public Entity OnSpawnEntityInternal(GameObject prefab, Vector3 position, Quaternion rotation)
@@ -261,6 +289,10 @@ public class ScenarioManager : MonoBehaviour
             entity.Initialize(m_entitiesSpawned);
             m_entities.Add(m_entitiesSpawned, entity);
             m_entitiesSpawned++;
+
+            if (OnEntitySpawnedCallback != null)
+                OnEntitySpawnedCallback.Invoke(entity);
+
             return entity;
         }
 
@@ -275,6 +307,9 @@ public class ScenarioManager : MonoBehaviour
 
     private void OnEntityDeathInternal(Entity entity, bool giveScore)
     {
+        if (OnEntityDeathCallback != null)
+            OnEntityDeathCallback.Invoke(entity);
+
         if (giveScore && entity.m_team == Team.Enemy)
             ModifyScore(entity.m_killScore);
 
@@ -283,7 +318,7 @@ public class ScenarioManager : MonoBehaviour
         if (m_entities.Count == 0 && m_currentRound != null && m_currentRound.IsLastWave)
         {
             // All waves cleared, player won the round
-            OnRoundEnd(true);
+            EndRoundInternal(true);
         }
     }
 
@@ -293,11 +328,15 @@ public class ScenarioManager : MonoBehaviour
             GameManager.ActivePlayerController.OnHit();
     }
 
-    public static void OnRoundEnd(bool success)
+    public static void StartRound(int index)
     {
-        if (s_instance == null)
-            return;
+        if (s_instance != null)
+            s_instance.StartRoundInternal(index);
+    }
 
-        s_instance.EndRound(success);
+    public static void EndRound(bool success)
+    {
+        if (s_instance != null)
+            s_instance.EndRoundInternal(success);
     }
 }

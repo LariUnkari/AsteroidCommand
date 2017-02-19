@@ -78,6 +78,18 @@ public class GameManager : MonoBehaviour
         if (m_state == State.Init && UserInterface.IsLoaded)
             InitGame();
 
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            TurretController newController = null;
+            if (ActivePlayerController is PlayerController)
+                newController = ActivePlayerController.GetComponent<AIController>();
+            else
+                newController = ActivePlayerController.GetComponent<PlayerController>();
+
+            if (newController != null)
+                SetActiveTurretController(newController);
+        }
+
         // TODO: Create a simple pause menu for this
         if (Input.GetKeyDown(KeyCode.Escape))
             Application.Quit();
@@ -85,10 +97,24 @@ public class GameManager : MonoBehaviour
 
     public static void SetActiveTurretController(TurretController turretController)
     {
-        if (s_instance == null)
+        if (s_instance == null || s_instance.m_activeTurretController == turretController)
             return;
 
+        if (s_instance.m_activeTurretController != null)
+        {
+            s_instance.m_activeTurretController.SetActive(false);
+
+            if (turretController != null)
+            {
+                turretController.SetCanControl(s_instance.m_activeTurretController.CanControl);
+                turretController.SetCanFire(s_instance.m_activeTurretController.CanFire);
+            }
+        }
+
         s_instance.m_activeTurretController = turretController;
+
+        if (turretController != null)
+            turretController.SetActive(true);
     }
 
     public static void SetVolume(float volume)
