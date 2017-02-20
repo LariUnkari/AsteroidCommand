@@ -35,6 +35,7 @@ public class GameManager : MonoBehaviour
         Cursor.visible = false;
 
         m_state = GameState.Init;
+
         s_instance = this;
 
         Debug.Log(DebugUtilities.AddTimestampPrefix("GameManager.Awake()"), this);
@@ -125,6 +126,7 @@ public class GameManager : MonoBehaviour
         if (state == GameState.Demo)
         {
             SetVolume(-80f);
+            ScenarioManager.InitializeScenario(m_scenario);
             ScenarioManager.StartRound(0);
             UserInterface.StartDemoRoutine();
         }
@@ -138,7 +140,7 @@ public class GameManager : MonoBehaviour
 
     public static void SetActiveTurretController(TurretController turretController, bool inheritControlStates)
     {
-        if (s_instance == null || s_instance.m_activeTurretController == turretController)
+        if (s_instance == null)
             return;
         
         if (s_instance.m_activeTurretController != null)
@@ -157,9 +159,12 @@ public class GameManager : MonoBehaviour
 
         if (turretController != null)
         {
+            Debug.Log(DebugUtilities.AddTimestampPrefix("Active TurretController is now " + turretController.GetType()));
             foreach (TurretController tc in turretController.gameObject.GetComponents<TurretController>())
                 tc.SetActive(tc == turretController);
         }
+        else
+            Debug.Log(DebugUtilities.AddTimestampPrefix("Active TurretController was cleared"));
     }
 
     public static void SetVolume(float volume)

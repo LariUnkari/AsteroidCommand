@@ -119,7 +119,7 @@ public class AIController : TurretController
             {
                 if (solutionFound && m_canFire)
                 {
-                    m_turret.Fire();
+                    m_turret.OnFireCommand(true);
                     m_currentTarget.m_wasShotAt = true;
                     m_currentTarget = null;
                     m_targetSeekT = m_targetSeekInterval;

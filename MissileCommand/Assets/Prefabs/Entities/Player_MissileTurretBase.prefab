@@ -467,6 +467,7 @@ MonoBehaviour:
   m_projectileModelPrefab: {fileID: 1426889442096822, guid: e5fae589d2de7d246b6e0928fc96eb2d,
     type: 2}
   m_fireSFX: {fileID: 11400000, guid: df50d4207ea27f44896d8b3560d9d0b0, type: 2}
+  m_canNotFireSFX: {fileID: 11400000, guid: 42dbfe975edf15c4cbd915a74987f025, type: 2}
   m_projectileSpeed: 30
   m_baseTransform: {fileID: 4487355327755932}
   m_turretTransform: {fileID: 4492726628688086}

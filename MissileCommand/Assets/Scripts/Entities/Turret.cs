@@ -8,6 +8,7 @@ public class Turret : Entity
     public GameObject m_projectileModelPrefab;
 
     public SoundEffectPreset m_fireSFX;
+    public SoundEffectPreset m_canNotFireSFX;
 
     public float m_projectileSpeed = 30f;
 
@@ -42,9 +43,9 @@ public class Turret : Entity
             m_turretTransform.LookAt(targetPosition + m_turretBaseForward, m_turretTransform.parent.up);
     }
 
-    public void Fire()
+    public void OnFireCommand(bool canFire)
     {
-        if (m_projectilePrefab != null)
+        if (canFire && m_projectilePrefab != null)
         {
             Vector3 position = m_muzzleTransform.position;
             position.z = 0f;
@@ -56,11 +57,11 @@ public class Turret : Entity
             {
                 entity.name = m_projectilePrefab.name + "_" + ScenarioManager.ShotsFired;
 
-                FuseProjectile fp = entity as FuseProjectile;
-                if (fp != null)
+                Projectile projectile = entity as Projectile;
+                if (projectile != null)
                 {
                     float speed = m_projectileSpeed * (ScenarioManager.Scenario != null ? ScenarioManager.Scenario.m_globalSpeedMultiplier : 1f);
-                    fp.Initialize(fp.ID, m_muzzleTransform.position, m_targetPosition, speed, m_projectileModelPrefab);
+                    projectile.Initialize(projectile.ID, m_muzzleTransform.position, m_targetPosition, speed, m_projectileModelPrefab);
                 }
                 else
                     Debug.LogError(DebugUtilities.AddTimestampPrefix("Couldn't find FuseProjectile component in player missile prefab instance!"), entity);
@@ -73,6 +74,8 @@ public class Turret : Entity
 
             //Debug.Log(DebugUtilities.AddTimestampPrefix("Turret fired shot " + ScenarioManager.ShotsFired + "!"), entity);
         }
+        else
+            m_canNotFireSFX.PlayAt(Camera.main.transform.position, Environment.AudioRoot);
     }
 
     protected override void OnTriggerEnter(Collider other)

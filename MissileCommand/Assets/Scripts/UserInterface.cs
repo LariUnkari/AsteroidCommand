@@ -8,6 +8,8 @@ public class UserInterface : MonoBehaviour
 
     public Text m_scoreAmount;
     public string m_scoreFormat = "{0}";
+    public Text m_highScoreAmount;
+    public string m_highScoreFormat = "{0}";
     public Text m_shotsAmount;
     public string m_shotsFormat = "{0}";
 
@@ -27,6 +29,7 @@ public class UserInterface : MonoBehaviour
     public Text m_roundEndMessage;
     public string m_endSuccess = "WELL DONE";
     public string m_endDefeat = "GAME OVER";
+    public string m_endHighScore = "NEW HIGHSCORE";
 
     public Text m_penaltyAmount;
     public string m_penaltyFormat = "-{0}";
@@ -34,6 +37,10 @@ public class UserInterface : MonoBehaviour
     public float m_penaltyPointInterval = 0.3f;
     public float m_penaltySpeedUpTimeLimit = 3f;
     public float m_penaltyPointIntervalMin = 0.1f;
+
+    public SoundEffectPreset m_highScorePointSFX;
+    public float m_highScoreChangeTime = 1f;
+    public float m_highScoreChangeInterval = 0.3f;
 
     //public GameObject[] m_ammoIndicators = new GameObject[10];
 
@@ -112,10 +119,9 @@ public class UserInterface : MonoBehaviour
 
     public IEnumerator DemoRoutine()
     {
+        m_demoPromptWidget.SetActive(false);
+
         float t = m_demoPromptFlashInterval;
-
-        m_demoPromptWidget.SetActive(true);
-
         while (GameManager.State == GameState.Demo)
         {
             if (t < 0f)
@@ -203,6 +209,7 @@ public class UserInterface : MonoBehaviour
 
     public IEnumerator PenaltyRoutine(int playerShotsFired)
     {
+        // It's fine if a few penalty points take a "long" time to process, but it needs to be fast when there's a lot of them
         float penaltyCycleInterval = m_penaltyPointInterval;
         if (playerShotsFired * m_penaltyPointInterval > m_penaltySpeedUpTimeLimit)
             penaltyCycleInterval = Mathf.Clamp(m_penaltySpeedUpTimeLimit / playerShotsFired, m_penaltyPointIntervalMin, m_penaltyPointInterval);
@@ -227,8 +234,6 @@ public class UserInterface : MonoBehaviour
 
             yield return new WaitForSecondsRealtime(penaltyCycleInterval);
         }
-
-        yield return new WaitForSecondsRealtime(2f);
     }
 
     public static void HideRoundEndWidget()
@@ -237,10 +242,42 @@ public class UserInterface : MonoBehaviour
             s_instance.m_roundEndWidget.SetActive(false);
     }
 
+    public static Coroutine StartHighScoreRoutine(int oldScore, int newScore)
+    {
+        if (s_instance == null)
+            return null;
+
+        return s_instance.StartRoundRoutine(s_instance.HighScoreRoutine(oldScore, newScore));
+    }
+
+    public IEnumerator HighScoreRoutine(int oldScore, int newScore)
+    {
+        m_roundEndMessage.text = m_endHighScore;
+
+        yield return new WaitForSeconds(1f);
+
+        float t = Time.time + m_highScoreChangeTime;
+        while (Time.time < t)
+        {
+            SetHighScore(Mathf.FloorToInt(Mathf.Lerp(oldScore, newScore, (t - Time.time) / m_highScoreChangeTime)));
+
+            if (m_highScorePointSFX != null)
+                m_highScorePointSFX.PlayOnSource(m_uiAudio);
+
+            yield return new WaitForSeconds(m_highScoreChangeInterval);
+        }
+    }
+
     public static void SetScore(int amount)
     {
         if (s_instance != null)
             s_instance.m_scoreAmount.text = string.Format(s_instance.m_scoreFormat, amount);
+    }
+
+    public static void SetHighScore(int amount)
+    {
+        if (s_instance != null)
+            s_instance.m_highScoreAmount.text = string.Format(s_instance.m_highScoreFormat, amount);
     }
 
     public static void SetShotsFired(int amount)

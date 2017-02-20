@@ -95,6 +95,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 0
+  m_scaleEffectWithRadius: 1
   m_collider: {fileID: 135501785823762720}
   m_drawRadius: 0
 --- !u!135 &135501785823762720

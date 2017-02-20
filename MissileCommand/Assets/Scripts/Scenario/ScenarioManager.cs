@@ -21,7 +21,8 @@ public class ScenarioManager : MonoBehaviour
 
     private Dictionary<int, Entity> m_entities;
     private int m_entitiesSpawned;
-
+    
+    private int m_highScore;
     private int m_playerScore;
     private int m_playerShotsFired;
 
@@ -33,7 +34,8 @@ public class ScenarioManager : MonoBehaviour
 
     public static ScenarioPreset Scenario { get { return s_instance != null ? s_instance.m_preset : null; } }
 
-    public static int Score { get { return s_instance != null ? s_instance.m_playerScore : -1; } }
+    public static int HighScore { get { return s_instance != null ? s_instance.m_highScore : 0; } }
+    public static int CurrentScore { get { return s_instance != null ? s_instance.m_playerScore : -1; } }
     public static int ShotsFired { get { return s_instance != null ? s_instance.m_playerShotsFired : -1; } }
 
     public static float RoundTime { get { return s_instance != null && s_instance.m_currentRound != null ? s_instance.m_currentRound.Time : -1f; } }
@@ -95,17 +97,23 @@ public class ScenarioManager : MonoBehaviour
 
         UserInterface.SetScore(m_playerScore);
 
+        SetHighScore(LoadHighScore());
+
         if (m_preset.m_playerPrefab != null)
         {
             Vector3 position = Environment.PlayerSpawn != null ? Environment.PlayerSpawn.position : Vector3.zero;
             Quaternion rotation = Environment.PlayerSpawn != null ? Environment.PlayerSpawn.rotation : Quaternion.identity;
             GameObject go = Instantiate<GameObject>(m_preset.m_playerPrefab, position, rotation, Environment.EntityRoot);
             go.name = m_preset.m_playerPrefab.name;
-            
+
+            TurretController tc;
             if (GameManager.State == GameState.Game)
-                GameManager.SetActiveTurretController(go.GetComponent<PlayerController>(), false);
+                tc = go.GetComponent<PlayerController>();
             else
-                GameManager.SetActiveTurretController(go.GetComponent<AIController>(), false);
+                tc = go.GetComponent<AIController>();
+
+            GameManager.SetActiveTurretController(tc, false);
+            tc.SetCanControl(false);
         }
         else
             Debug.LogError(DebugUtilities.AddTimestampPrefix("ScenarioPreset doesn't define a player prefab!"), m_preset);
@@ -178,9 +186,12 @@ public class ScenarioManager : MonoBehaviour
 
         yield return new WaitForSecondsRealtime(1f);
 
-        UserInterface.ShowRoundStartWidget(m_currentRound.Index);
+        if (GameManager.State == GameState.Game)
+        {
+            UserInterface.ShowRoundStartWidget(m_currentRound.Index);
 
-        yield return UserInterface.StartAlertRoutine();
+            yield return UserInterface.StartAlertRoutine();
+        }
 
         UserInterface.HideRoundStartWidget();
         m_currentRound.Start();
@@ -204,16 +215,34 @@ public class ScenarioManager : MonoBehaviour
     private System.Collections.IEnumerator RoundEndRoutine(bool success)
     {
         UserInterface.StopRoundRoutines();
-        UserInterface.ShowRoundEndWidget(success);
-        UserInterface.SetPenaltyAmount(0);
 
-        yield return new WaitForSecondsRealtime(1f);
+        if (GameManager.State == GameState.Game)
+        {
+            UserInterface.ShowRoundEndWidget(success);
+            UserInterface.SetPenaltyAmount(0);
 
-        //Debug.Log(DebugUtilities.AddTimestampPrefix("Shots fired this round: " + m_playerShotsFired));
+            yield return new WaitForSecondsRealtime(1f);
 
-        yield return UserInterface.StartPenaltyRoutine(m_playerShotsFired);
+            //Debug.Log(DebugUtilities.AddTimestampPrefix("Shots fired this round: " + m_playerShotsFired));
 
-        UserInterface.HideRoundEndWidget();
+            if (m_playerShotsFired > 0)
+                yield return UserInterface.StartPenaltyRoutine(m_playerShotsFired);
+            else
+                yield return new WaitForSeconds(1f);
+
+            if (!success && GameManager.State == GameState.Game && m_playerScore > m_highScore)
+            {
+                SaveHighScore(m_playerScore);
+
+                yield return UserInterface.StartHighScoreRoutine(m_playerScore, m_highScore);
+
+                SetHighScore(m_playerScore);
+            }
+
+            yield return new WaitForSeconds(2f);
+
+            UserInterface.HideRoundEndWidget();
+        }
 
         // TODO: Cache entities instead of outright destroying them
         foreach (Entity e in m_entities.Values)
@@ -224,10 +253,32 @@ public class ScenarioManager : MonoBehaviour
         if (success)
             StartRoundInternal(m_nextRoundIndex);
         else
-        {
-            InitializeScenarioInternal(m_preset);
             GameManager.SetState(GameState.Demo);
-        }
+    }
+
+    /// <summary>
+    /// Loads the HighScore from PlayerPrefs
+    /// </summary>
+    /// <returns>a high score, hopefully</returns>
+    public static int LoadHighScore()
+    {
+        return PlayerPrefs.GetInt("HighScore");
+    }
+
+    /// <summary>
+    /// Saves the HighScore to PlayerPrefs
+    /// </summary>
+    public static void SaveHighScore(int highScore)
+    {
+        PlayerPrefs.SetInt("HighScore", highScore);
+    }
+
+    public static void SetHighScore(int highScore)
+    {
+        if (s_instance != null)
+            s_instance.m_highScore = highScore;
+
+        UserInterface.SetHighScore(highScore);
     }
 
     public static void ModifyScore(int amount)
