@@ -156,11 +156,11 @@ public class AIController : TurretController
 
         if (target != null && target.m_entity != null)
         {
-            Debug.LogWarning(DebugUtilities.AddTimestampPrefix(GetType() + ": New target set: " + target.m_entity.name + ", threat=" + target.m_threat), target.m_entity);
+            //Debug.LogWarning(DebugUtilities.AddTimestampPrefix(GetType() + ": New target set: " + target.m_entity.name + ", threat=" + target.m_threat), target.m_entity);
             DebugUtilities.DrawArrow(transform.position, target.Position, Vector3.back, Color.red, 0, 1f);
         }
-        else
-            Debug.LogWarning(DebugUtilities.AddTimestampPrefix(GetType() + ": Target cleared"));
+        //else
+            //Debug.LogWarning(DebugUtilities.AddTimestampPrefix(GetType() + ": Target cleared"));
     }
 
     private void SetActionIntervals(int roundIndex)
@@ -173,7 +173,8 @@ public class AIController : TurretController
     {
         base.SetActive(isActive);
 
-        SetActionIntervals(ScenarioManager.RoundIndex);
+        if (isActive)
+            SetActionIntervals(ScenarioManager.RoundIndex);
     }
 
     public override void OnRoundStarted(int index)
@@ -190,7 +191,7 @@ public class AIController : TurretController
 
         if (!m_enemies.ContainsKey(entity.ID))
         {
-            Debug.Log(DebugUtilities.AddTimestampPrefix(GetType() + ": New contact[" + entity.ID + "]: " + entity.name + ")"), entity);
+            //Debug.Log(DebugUtilities.AddTimestampPrefix(GetType() + ": New contact[" + entity.ID + "]: " + entity.name + ")"), entity);
 
             // Add to pending contacts since the entity might not have been properly initialized yet
             m_pendingContacts.Add(entity);

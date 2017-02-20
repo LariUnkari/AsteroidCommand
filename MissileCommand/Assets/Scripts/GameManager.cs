@@ -2,17 +2,17 @@
 using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
 
+public enum GameState { Init, Demo, Game };
+
 public class GameManager : MonoBehaviour
 {
-    public enum State { Init, Game };
-
     public static GameManager s_instance;
 
     public ScenarioPreset m_scenario;
 
     public AudioMixer m_audioMixer;
 
-    private State m_state;
+    private GameState m_state;
 
     private TurretController m_activeTurretController;
 
@@ -20,6 +20,8 @@ public class GameManager : MonoBehaviour
 
     public static AudioMixer AudioMixer { get { return s_instance != null ? s_instance.m_audioMixer : null; } }
     public static TurretController ActivePlayerController { get { return s_instance != null ? s_instance.m_activeTurretController : null; } }
+
+    public static GameState State { get { return s_instance != null ? s_instance.m_state : GameState.Init; } }
 
     private void Awake()
     {
@@ -30,7 +32,9 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        m_state = State.Init;
+        Cursor.visible = false;
+
+        m_state = GameState.Init;
         s_instance = this;
 
         Debug.Log(DebugUtilities.AddTimestampPrefix("GameManager.Awake()"), this);
@@ -65,9 +69,7 @@ public class GameManager : MonoBehaviour
             }
 
             ScenarioManager.InitializeScenario(m_scenario);
-
-            Cursor.visible = false;
-            m_state = State.Game;
+            SetState(GameState.Demo);
         }
         else
             Debug.LogError(DebugUtilities.AddTimestampPrefix("No Scenario provided!"));
@@ -75,19 +77,29 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        if (m_state == State.Init && UserInterface.IsLoaded)
+        if (m_state == GameState.Init && UserInterface.IsLoaded)
             InitGame();
 
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (m_state == GameState.Demo)
         {
-            TurretController newController = null;
-            if (ActivePlayerController is PlayerController)
-                newController = ActivePlayerController.GetComponent<AIController>();
-            else
-                newController = ActivePlayerController.GetComponent<PlayerController>();
+            if (Input.anyKeyDown || Input.GetMouseButtonDown(0))
+            {
+                SetState(GameState.Game);
+            }
+        }
+        else if (m_state == GameState.Game)
+        {
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                TurretController newController = null;
+                if (ActivePlayerController is PlayerController)
+                    newController = ActivePlayerController.GetComponent<AIController>();
+                else
+                    newController = ActivePlayerController.GetComponent<PlayerController>();
 
-            if (newController != null)
-                SetActiveTurretController(newController);
+                if (newController != null)
+                    SetActiveTurretController(newController, true);
+            }
         }
 
         // TODO: Create a simple pause menu for this
@@ -95,26 +107,59 @@ public class GameManager : MonoBehaviour
             Application.Quit();
     }
 
-    public static void SetActiveTurretController(TurretController turretController)
+    public static void SetState(GameState state)
+    {
+        if (s_instance != null)
+            s_instance.SetStateInternal(state);
+    }
+
+    public void SetStateInternal(GameState state)
+    {
+        if (m_state == state)
+            return;
+
+        Debug.Log(DebugUtilities.AddTimestampPrefix("Game state changing from " + m_state + " to " + state));
+
+        m_state = state;
+
+        if (state == GameState.Demo)
+        {
+            SetVolume(-80f);
+            ScenarioManager.StartRound(0);
+            UserInterface.StartDemoRoutine();
+        }
+        if (state == GameState.Game)
+        {
+            SetVolume(0f);
+            ScenarioManager.InitializeScenario(m_scenario);
+            ScenarioManager.StartRound(0);
+        }
+    }
+
+    public static void SetActiveTurretController(TurretController turretController, bool inheritControlStates)
     {
         if (s_instance == null || s_instance.m_activeTurretController == turretController)
             return;
-
+        
         if (s_instance.m_activeTurretController != null)
         {
-            s_instance.m_activeTurretController.SetActive(false);
-
-            if (turretController != null)
+            if (inheritControlStates && turretController != null)
             {
                 turretController.SetCanControl(s_instance.m_activeTurretController.CanControl);
                 turretController.SetCanFire(s_instance.m_activeTurretController.CanFire);
             }
+            
+            foreach (TurretController tc in s_instance.m_activeTurretController.GetComponents<TurretController>())
+                tc.SetActive(false);
         }
 
         s_instance.m_activeTurretController = turretController;
 
         if (turretController != null)
-            turretController.SetActive(true);
+        {
+            foreach (TurretController tc in turretController.gameObject.GetComponents<TurretController>())
+                tc.SetActive(tc == turretController);
+        }
     }
 
     public static void SetVolume(float volume)
@@ -123,6 +168,9 @@ public class GameManager : MonoBehaviour
             return;
 
         if (s_instance.m_audioMixer != null)
+        {
+            Debug.Log(DebugUtilities.AddTimestampPrefix("Master volume being set to " + volume.ToString("F2") + "dB"));
             s_instance.m_audioMixer.SetFloat("VolumeMaster", volume);
+        }
     }
 }

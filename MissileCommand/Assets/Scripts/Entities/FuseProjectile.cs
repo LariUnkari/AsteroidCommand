@@ -34,10 +34,11 @@ public class FuseProjectile : Projectile
         }
     }
 
-    protected override void OnDeath(bool giveScore)
+    protected override void OnDestroy()
     {
-        Destroy(m_targetCursor);
+        base.OnDestroy();
 
-        base.OnDeath(giveScore);
+        if (m_targetCursor != null)
+            Destroy(m_targetCursor);
     }
 }

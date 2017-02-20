@@ -53,7 +53,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_team: 0
   m_killScore: 0
-  m_effectPrefab: {fileID: 1144125868026428, guid: 08696b48e5c859840bed0ff45c5842d6,
+  m_effectPrefab: {fileID: 1144125868026428, guid: d81868b3c5be11f48ba3e0a338d03ed2,
     type: 2}
   m_sfxPreset: {fileID: 11400000, guid: aec33b29f8f0bfe449657e30ee41dddc, type: 2}
   m_duration: 10

@@ -37,7 +37,7 @@ public abstract class Entity : MonoBehaviour
         Destroy(gameObject);
     }
 
-    private void OnDestroy()
+    protected virtual void OnDestroy()
     {
         ScenarioManager.OnRoundStartedCallback -= OnRoundStarted;
         ScenarioManager.OnRoundEndedCallback -= OnRoundEnded;

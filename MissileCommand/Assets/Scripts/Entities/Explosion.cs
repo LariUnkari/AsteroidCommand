@@ -8,6 +8,7 @@ public class Explosion : Entity
     public float m_duration = 2f;
     public float m_maxRadius = 0.5f;
     public AnimationCurve m_radiusModifierCurve;
+    public bool m_scaleEffectWithRadius;
 
     public SphereCollider m_collider;
 
@@ -17,6 +18,7 @@ public class Explosion : Entity
     private float m_radius;
 
     private Transform m_effectTransform;
+    private Vector3 m_effectScale;
 
     private LineRenderer m_radiusRenderer;
     private Vector3[] m_radiusRendererPositions;
@@ -32,9 +34,13 @@ public class Explosion : Entity
 
         if (m_effectPrefab != null)
         {
-            GameObject go = Instantiate<GameObject>(m_effectPrefab, transform.position, transform.rotation, transform);
+            GameObject go = Instantiate<GameObject>(m_effectPrefab, transform.position, m_effectPrefab.transform.rotation, transform);
             m_effectTransform = go.transform;
-            m_effectTransform.localScale = Vector3.one * m_radius;
+            if (m_scaleEffectWithRadius)
+            {
+                m_effectScale = m_effectTransform.localScale;
+                m_effectTransform.localScale = m_effectScale * m_radius;
+            }
         }
 
         if (m_sfxPreset != null)
@@ -56,8 +62,8 @@ public class Explosion : Entity
         if (m_collider != null)
             m_collider.radius = m_radius;
 
-        if (m_effectTransform != null)
-            m_effectTransform.localScale = Vector3.one * m_radius;
+        if (m_effectTransform != null && m_scaleEffectWithRadius)
+            m_effectTransform.localScale = m_effectScale * m_radius;
 
         if (m_drawRadius)
             UpdateRadiusRenderer();

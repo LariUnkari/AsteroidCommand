@@ -56,7 +56,9 @@ public abstract class TurretController : MonoBehaviour
 
     public virtual void SetActive(bool isActive)
     {
-        Debug.Log(DebugUtilities.AddTimestampPrefix(GetType() + ".SetActive(" + isActive + ")"), this);
+        if (enabled != isActive)
+            Debug.Log(DebugUtilities.AddTimestampPrefix(GetType() + ".SetActive(" + isActive + ")"), this);
+
         enabled = isActive;
 
         if (m_cursorTargetObject != null)
@@ -65,13 +67,20 @@ public abstract class TurretController : MonoBehaviour
 
     public void SetCanControl(bool canControl)
     {
-        // TODO: Check if already disabled
-        // TODO: Give player feedback, sounds and such
+        if (m_canControl != canControl)
+            Debug.Log(DebugUtilities.AddTimestampPrefix(GetType() + ".SetCanControl(" + canControl + ")"), this);
+
         m_canControl = canControl;
+
+        if (m_cursorTargetObject != null)
+            m_cursorTargetObject.SetActive(canControl);
     }
 
     public void SetCanFire(bool canFire)
     {
+        if (m_canFire != canFire)
+            Debug.Log(DebugUtilities.AddTimestampPrefix(GetType() + ".SetCanFire(" + canFire + ")"), this);
+
         m_canFire = canFire;
     }
 

@@ -67,8 +67,14 @@ public class SoundEffectPreset : ScriptableObject
 
         return m_volumeDefault;
     }
-    
-    public void PlayAt(Vector3 position, Transform parent)
+
+    public AudioSource PlayAt(Vector3 position, Transform parent)
+    {
+        return PlayAt(position, parent, false);
+    }
+
+
+    public AudioSource PlayAt(Vector3 position, Transform parent, bool keepSource)
     {
         GameObject go = new GameObject("AudioSource_" + name);
         go.transform.position = position;
@@ -77,7 +83,10 @@ public class SoundEffectPreset : ScriptableObject
         AudioSource source = go.AddComponent<AudioSource>();
         PlayOnSource(source);
         
-        Destroy(go, m_loop ? source.clip.length * m_loopCount : source.clip.length + 0.5f);
+        if (!keepSource)
+            Destroy(go, m_loop ? source.clip.length * m_loopCount : source.clip.length + 0.5f);
+
+        return source;
     }
 
     public void PlayOnSource(AudioSource audioSource)

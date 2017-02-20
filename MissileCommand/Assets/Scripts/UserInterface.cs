@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 
 public class UserInterface : MonoBehaviour
 {
@@ -9,6 +10,9 @@ public class UserInterface : MonoBehaviour
     public string m_scoreFormat = "{0}";
     public Text m_shotsAmount;
     public string m_shotsFormat = "{0}";
+
+    public GameObject m_demoPromptWidget;
+    public float m_demoPromptFlashInterval = 1f;
 
     public GameObject m_roundStartWidget;
     public Text m_roundIndex;
@@ -33,6 +37,10 @@ public class UserInterface : MonoBehaviour
 
     //public GameObject[] m_ammoIndicators = new GameObject[10];
 
+    private IEnumerator m_roundRoutineIEnumerator;
+
+    private AudioSource m_uiAudio;
+
     public static bool IsLoaded { get { return s_instance != null; } }
 
     public static Transform Root { get { return s_instance != null ? s_instance.transform : null; } }
@@ -50,16 +58,86 @@ public class UserInterface : MonoBehaviour
 
         s_instance = this;
 
+        m_demoPromptWidget.SetActive(false);
+
         HideRoundStartWidget();
         HideRoundEndWidget();
 
+        GameObject go = new GameObject("AudioSource_UserInterface");
+        go.transform.position = Camera.main.transform.position;
+        go.transform.parent = Environment.AudioRoot;
+        m_uiAudio = go.AddComponent<AudioSource>();
+
         Debug.Log(DebugUtilities.AddTimestampPrefix("UserInterface.Awake()"), this);
+    }
+
+    /// <summary>
+    /// Only one round routine can be active at any given time, this makes sure that holds true
+    /// </summary>
+    /// <param name="routine">IEnumerator to run</param>
+    /// <returns>Started Coroutine</returns>
+    private Coroutine StartRoundRoutine(System.Collections.IEnumerator routine)
+    {
+        StopRoundRoutine();
+
+        m_roundRoutineIEnumerator = routine;
+        return StartCoroutine(routine);
+    }
+
+    private void StopRoundRoutine()
+    {
+        if (m_roundRoutineIEnumerator != null)
+        {
+            Debug.LogWarning(DebugUtilities.AddTimestampPrefix("UserInterface stopping previous round routine!"));
+            StopCoroutine(m_roundRoutineIEnumerator);
+        }
+    }
+
+    public static void StopRoundRoutines()
+    {
+        if (s_instance != null)
+        {
+            s_instance.StopRoundRoutine();
+            s_instance.m_uiAudio.Stop();
+        }
+    }
+
+    public static Coroutine StartDemoRoutine()
+    {
+        if (s_instance == null)
+            return null;
+        
+        return s_instance.StartCoroutine(s_instance.DemoRoutine());
+    }
+
+    public IEnumerator DemoRoutine()
+    {
+        float t = m_demoPromptFlashInterval;
+
+        m_demoPromptWidget.SetActive(true);
+
+        while (GameManager.State == GameState.Demo)
+        {
+            if (t < 0f)
+            {
+                t = m_demoPromptFlashInterval;
+                m_demoPromptWidget.SetActive(!m_demoPromptWidget.activeSelf);
+            }
+
+            yield return null;
+
+            t -= Time.deltaTime;
+        }
+
+        m_demoPromptWidget.SetActive(false);
     }
 
     public static void ShowRoundStartWidget(int roundIndex)
     {
         if (s_instance == null)
             return;
+
+        UserInterface.HideRoundEndWidget();
 
         if (s_instance.m_roundStartWidget != null)
         {
@@ -72,19 +150,20 @@ public class UserInterface : MonoBehaviour
     {
         if (s_instance == null)
             return null;
-
-        return s_instance.StartCoroutine(s_instance.AlertRoutine());
+        
+        return s_instance.StartRoundRoutine(s_instance.AlertRoutine());
     }
 
-    public System.Collections.IEnumerator AlertRoutine()
+    public IEnumerator AlertRoutine()
     {
-        if (UserInterface.RoundStartSFX != null)
+        if (m_roundStartSFX != null)
         {
             int repeats = m_alertSoundCount;
+            
             while (repeats-- > 0)
             {
-                UserInterface.RoundStartSFX.PlayAt(Camera.main.transform.position, Environment.AudioRoot);
-
+                Debug.Log(DebugUtilities.AddTimestampPrefix("Beep!"));
+                m_roundStartSFX.PlayOnSource(m_uiAudio);
                 yield return new WaitForSecondsRealtime(m_alertInterval);
             }
             
@@ -105,6 +184,8 @@ public class UserInterface : MonoBehaviour
         if (s_instance == null)
             return;
 
+        UserInterface.HideRoundStartWidget();
+
         if (s_instance.m_roundEndWidget != null)
         {
             s_instance.m_roundEndMessage.text = success ? s_instance.m_endSuccess : s_instance.m_endDefeat;
@@ -117,10 +198,10 @@ public class UserInterface : MonoBehaviour
         if (s_instance == null)
             return null;
 
-        return s_instance.StartCoroutine(s_instance.PenaltyRoutine(playerShotsFired));
+        return s_instance.StartRoundRoutine(s_instance.PenaltyRoutine(playerShotsFired));
     }
 
-    public System.Collections.IEnumerator PenaltyRoutine(int playerShotsFired)
+    public IEnumerator PenaltyRoutine(int playerShotsFired)
     {
         float penaltyCycleInterval = m_penaltyPointInterval;
         if (playerShotsFired * m_penaltyPointInterval > m_penaltySpeedUpTimeLimit)
@@ -139,7 +220,10 @@ public class UserInterface : MonoBehaviour
             SetPenaltyAmount(-penaltyAmount);
 
             if (m_penaltyPointSFX != null)
-                m_penaltyPointSFX.PlayAt(Camera.main.transform.position, Environment.AudioRoot);
+            {
+                Debug.Log(DebugUtilities.AddTimestampPrefix("Chuck!"));
+                m_penaltyPointSFX.PlayOnSource(m_uiAudio);
+            }
 
             yield return new WaitForSecondsRealtime(penaltyCycleInterval);
         }

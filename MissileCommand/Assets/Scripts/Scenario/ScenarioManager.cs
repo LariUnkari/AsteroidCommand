@@ -27,6 +27,8 @@ public class ScenarioManager : MonoBehaviour
 
     private Rect m_gameArea;
 
+    private System.Collections.IEnumerator m_roundRoutineIEnumerator;
+
     public static bool IsLoaded { get { return s_instance != null; } }
 
     public static ScenarioPreset Scenario { get { return s_instance != null ? s_instance.m_preset : null; } }
@@ -74,9 +76,19 @@ public class ScenarioManager : MonoBehaviour
         m_preset = preset;
 
         m_currentRound = null;
-        m_entities = new Dictionary<int, Entity>();
 
         SetupGameArea();
+
+        if (m_entities == null)
+            m_entities = new Dictionary<int, Entity>();
+        else
+        {
+            // TODO: Cache entities instead of outright destroying them
+            foreach (Entity e in m_entities.Values)
+                Destroy(e.gameObject);
+
+            m_entities.Clear();
+        }
 
         m_playerScore = 0;
         m_playerShotsFired = 0;
@@ -89,26 +101,14 @@ public class ScenarioManager : MonoBehaviour
             Quaternion rotation = Environment.PlayerSpawn != null ? Environment.PlayerSpawn.rotation : Quaternion.identity;
             GameObject go = Instantiate<GameObject>(m_preset.m_playerPrefab, position, rotation, Environment.EntityRoot);
             go.name = m_preset.m_playerPrefab.name;
-
-            // TODO: Smartly pick a suitable controller type, AI or Player
-            TurretController tc = go.GetComponent<PlayerController>();
-            if (tc != null)
-            {
-                GameManager.SetActiveTurretController(tc);
-                tc.SetCanControl(false);
-            }
-            tc = go.GetComponent<AIController>();
-            if (tc != null)
-            {
-                tc.SetCanControl(false);
-                tc.SetActive(false);
-            }
+            
+            if (GameManager.State == GameState.Game)
+                GameManager.SetActiveTurretController(go.GetComponent<PlayerController>(), false);
+            else
+                GameManager.SetActiveTurretController(go.GetComponent<AIController>(), false);
         }
         else
             Debug.LogError(DebugUtilities.AddTimestampPrefix("ScenarioPreset doesn't define a player prefab!"), m_preset);
-
-        Time.timeScale = 1f;
-        StartRoundInternal(0);
     }
 
     private void SetupGameArea()
@@ -139,20 +139,43 @@ public class ScenarioManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Only one round routine can be active at any given time, this makes sure that holds true
+    /// </summary>
+    /// <param name="routine">IEnumerator to run</param>
+    /// <returns>Started Coroutine</returns>
+    private Coroutine StartRoundRoutine(System.Collections.IEnumerator routine)
+    {
+        if (m_roundRoutineIEnumerator != null)
+        {
+            Debug.LogWarning(DebugUtilities.AddTimestampPrefix("ScenarioManager stopping previous round routine!"));
+            StopCoroutine(m_roundRoutineIEnumerator);
+        }
+
+        m_roundRoutineIEnumerator = routine;
+        return StartCoroutine(routine);
+    }
+
     public void StartRoundInternal(int index)
     {
-        m_playerShotsFired = 0;
-        UserInterface.SetShotsFired(m_playerShotsFired);
-        GameManager.SetVolume(0f);
+        Time.timeScale = 1f;
+
+        SetShotsFired(0);
+
+        if (GameManager.ActivePlayerController != null)
+            GameManager.ActivePlayerController.SetCanFire(false);
 
         m_currentRound = ScenarioGenerator.GenerateRound(index, m_preset);
         m_nextRoundIndex = index + 1;
 
-        StartCoroutine(RoundStartRoutine());
+        StartRoundRoutine(RoundStartRoutine());
     }
 
     private System.Collections.IEnumerator RoundStartRoutine()
     {
+        UserInterface.StopRoundRoutines();
+        UserInterface.HideRoundEndWidget();
+
         yield return new WaitForSecondsRealtime(1f);
 
         UserInterface.ShowRoundStartWidget(m_currentRound.Index);
@@ -175,11 +198,12 @@ public class ScenarioManager : MonoBehaviour
         if (OnRoundEndedCallback != null)
             OnRoundEndedCallback.Invoke(success);
 
-        StartCoroutine(RoundEndRoutine(success));
+        StartRoundRoutine(RoundEndRoutine(success));
     }
 
     private System.Collections.IEnumerator RoundEndRoutine(bool success)
     {
+        UserInterface.StopRoundRoutines();
         UserInterface.ShowRoundEndWidget(success);
         UserInterface.SetPenaltyAmount(0);
 
@@ -197,11 +221,13 @@ public class ScenarioManager : MonoBehaviour
 
         m_entities.Clear();
         
-        // TODO: Go to demo mode
         if (success)
             StartRoundInternal(m_nextRoundIndex);
         else
+        {
             InitializeScenarioInternal(m_preset);
+            GameManager.SetState(GameState.Demo);
+        }
     }
 
     public static void ModifyScore(int amount)
@@ -324,8 +350,10 @@ public class ScenarioManager : MonoBehaviour
 
     public static void OnPlayerHit()
     {
-        if (GameManager.ActivePlayerController != null)
-            GameManager.ActivePlayerController.OnHit();
+        //if (GameManager.ActivePlayerController != null)
+            //GameManager.ActivePlayerController.OnHit();
+
+        EndRound(false);
     }
 
     public static void StartRound(int index)
