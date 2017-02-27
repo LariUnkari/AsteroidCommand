@@ -17,7 +17,7 @@ MonoBehaviour:
   m_loop: 0
   m_loopCount: 2
   m_randomizeVolume: 0
-  m_volumeDefault: 0.75
+  m_volumeDefault: 0.5
   m_volumeMin: 0.9
   m_volumeMax: 1.1
   m_rangeMin: 3

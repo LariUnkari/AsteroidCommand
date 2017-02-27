@@ -9,15 +9,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ee5b159290812194384f14f640ed5faf, type: 3}
-  m_Name: SFX_Warning_ProximityTrigger_Near
+  m_Name: SFX_UI_Unable_To_Fire
   m_EditorClassIdentifier: 
   m_mixerGroup: {fileID: 24300001, guid: b2e073299987aae478548bfcb921c770, type: 2}
   m_clips:
-  - {fileID: 8300000, guid: 113d2ff204a994ef8848ff0d54548bc9, type: 3}
+  - {fileID: 8300000, guid: 9b1d7dc2ea452dd44b6eea12196468fc, type: 3}
   m_loop: 0
   m_loopCount: 2
   m_randomizeVolume: 0
-  m_volumeDefault: 0.5
+  m_volumeDefault: 0.75
   m_volumeMin: 0.9
   m_volumeMax: 1.1
   m_rangeMin: 3
