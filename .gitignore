@@ -1,0 +1,12 @@
+/AsteroidCommand/Library
+/AsteroidCommand/Temp
+/AsteroidCommand/*.sln
+/AsteroidCommand/*.csproj
+/AsteroidCommand/.vs
+/Build
+/MissileCommand/*.csproj
+/MissileCommand/*.sln
+/MissileCommand/Library
+/MissileCommand/Temp
+/MissileCommand/.vs
+/Archive
