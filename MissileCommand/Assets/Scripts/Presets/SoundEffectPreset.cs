@@ -82,6 +82,13 @@ public class SoundEffectPreset : ScriptableObject
 
         AudioSource source = go.AddComponent<AudioSource>();
         PlayOnSource(source);
+
+        // Just a dirty safety check if clip wasn't included in repo etc.
+        if (source.clip == null)
+        {
+            Destroy(go);
+            return null;
+        }
         
         if (!keepSource)
             Destroy(go, m_loop ? source.clip.length * m_loopCount : source.clip.length + 0.5f);
