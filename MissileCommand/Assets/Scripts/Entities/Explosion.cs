@@ -89,7 +89,7 @@ public class Explosion : Entity
         m_radiusRenderer.useWorldSpace = false;
         m_radiusRenderer.startWidth = 0.1f;
         m_radiusRenderer.endWidth = 0.1f;
-        m_radiusRenderer.numPositions = m_radiusRendererPositions.Length + 1;
+        m_radiusRenderer.positionCount = m_radiusRendererPositions.Length + 1;
     }
 
     private void UpdateRadiusRenderer()
@@ -99,7 +99,7 @@ public class Explosion : Entity
 
         m_radiusRendererPositions = Math3D.GetCircleVertices(Vector3.zero, Vector3.forward, Vector3.up, m_radius - m_radiusRenderer.startWidth, m_radiusRendererPositions.Length);
         for (int i = 0; i < m_radiusRendererPositions.Length; i++) m_radiusRenderer.SetPosition(i, m_radiusRendererPositions[i]);
-        m_radiusRenderer.SetPosition(m_radiusRenderer.numPositions - 1, m_radiusRendererPositions[0]);
+        m_radiusRenderer.SetPosition(m_radiusRenderer.positionCount - 1, m_radiusRendererPositions[0]);
     }
 
     protected override void OnTriggerEnter(Collider other)
